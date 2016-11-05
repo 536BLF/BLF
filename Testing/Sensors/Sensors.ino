@@ -1,5 +1,5 @@
 #include "Macros.h"
-#include "TimerOne.h"
+//#include "TimerOne.h"
 
 volatile int analog0[NUM_SENSORS];
 volatile int analog1[NUM_SENSORS];
@@ -70,7 +70,7 @@ void loop() {
     //Sensor_Error_Calc(PIN_ANALOG_0);
     //Serial.println(error0);
     
-    //Print_Sensor_Values();
+    Print_Sensor_Values();
     
     //lineVal0 = Get_Line_Value(PIN_ANALOG_0);
     //Serial.println(lineVal0);
@@ -226,7 +226,8 @@ void Calibrate(void){
  * Description: Obtains an average of the readings when reading in from the sensors
  */
 int Read_Average(int select, int num_samples){
-  int i, total;
+  int i;
+  int total =0;
 
   switch(select){
     case PIN_ANALOG_0: 
