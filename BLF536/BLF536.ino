@@ -1,4 +1,5 @@
 #include "Macros.h"
+#include <AFMotor.h>
 
 class car
 {
@@ -34,6 +35,10 @@ car::car()
   Kprop = KPROP;
   totalError = 0;
   refPoint = 0;
+  AF_DCMotor motorRight(1, MOTOR12_64KHZ);
+  AF_DCMotor motorLeft(2, MOTOR12_64KHZ);
+
+  
 }
 
 void car::MotorDiff()
@@ -45,10 +50,18 @@ int LeftSpeed;
    LeftSpeed=this->pwmSetSpeed-(this->motorDiffPWM/2);
    RightSpeed=this->pwmSetSpeed+(this->motorDiffPWM/2);
    // 
-   digitalWrite(DIRECTIONPIN1,HIGH);
-   digitalWrite(DIRECTIONPIN2, LOW);
-   analogWrite(SPEEDPIN1,LeftSpeed);// write speed for motor1
-   analogWrite(SPEEDPIN1,LeftSpeed); // write speed for motor2 
+   motorRight.setSpeed(RightSpeed);
+   motorLeft.setSpeed(LeftSpeed);
+
+   motorRight.run(FORWARD);
+   delay (MOTORDELAY)
+   motorLeft.run(FORWARD);
+   
+//   digitalWrite(DIRECTIONPIN1,HIGH);
+//   digitalWrite(DIRECTIONPIN2, LOW);
+//   analogWrite(SPEEDPIN1,LeftSpeed);// write speed for motor1
+//   analogWrite(SPEEDPIN2,RightSpeed); // write speed for motor2
+ 
 }
 
 void car::sysId()
