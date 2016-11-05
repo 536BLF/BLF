@@ -30,4 +30,12 @@
 
 #define NUM_SENSORS (8)
 
-
+#define SETSPEED 175 //arbitrary
+#define ZEROREFTIME 1000 //Delay before unit step kicks in
+#define KPROP 100; //Proportional controller constant
+#define DIRECTIONPIN1 7
+#define DIRECTIONPIN2 10
+// motor input1 and input2 they should be PWM signals
+#define SPEEDPIN1 3
+#define SPEEDPIN2 14
+// motor output1 and 2   those pins are decided by pin configuration in Datasheet
