@@ -1,5 +1,5 @@
 #include "Macros.h"
-#include "TimerOne.h"
+//#include "TimerOne.h"
 
 volatile int analog0[NUM_SENSORS];
 volatile int analog1[NUM_SENSORS];
@@ -58,22 +58,29 @@ void loop() {
     
   #else
   
-    Start_Timer();
+    //Start_Timer();
     
     ReadAllSensors(BLACK_LINE);                   // Reads and records all the sensor values
     FSM();
 
-    Display_Timer();
+    //Display_Timer();
     
     // --- Uncomment any of these below if you want to see specific outputs --- //
      
-    //Sensor_Error_Calc(PIN_ANALOG_0);
-    //Serial.println(error0);
+    Sensor_Error_Calc(PIN_ANALOG_0);
+    Serial.print("Analog0:\t"); Serial.print(error0); Serial.print("\t");
+    Sensor_Error_Calc(PIN_ANALOG_1);
+    Serial.print("Analog0:\t"); Serial.print(error1); Serial.print("\t");
+    Total_Error_Calc(2);
+    Serial.print("Total:\t"); Serial.println(totalError);
     
-    //Print_Sensor_Values();
+    //Print_Sensor_Values(PIN_ANALOG_0);
+    //Print_Sensor_Values(PIN_ANALOG_1);
     
     //lineVal0 = Get_Line_Value(PIN_ANALOG_0);
-    //Serial.println(lineVal0);
+    //Serial.print("Analog0:\t"); Serial.print(lineVal0); Serial.print("\t");
+    //lineVal1 = Get_Line_Value(PIN_ANALOG_1);
+    //Serial.print("Analog1:\t"); Serial.println(lineVal1);
     
   #endif
 
@@ -126,7 +133,7 @@ void Total_Error_Calc(int select){
       totalError = error1;                // When the line for sensor 0 has disappeared
 
     case 2:
-      totalError = (error0 + error1)/2;   // Average of the sensor errors
+      totalError = ((-error0) + error1)/2;   // Average of the sensor errors
   }
 }
 
@@ -141,13 +148,13 @@ void Sensor_Error_Calc(int select){
     case PIN_ANALOG_0:
     
       lineVal0 = Get_Line_Value(PIN_ANALOG_0);                        // Get the line value between 0 - 7000
-      error0 = ((float)lineVal0 - (float)ZERO_ERROR) / (float)1000;   // Get the error of the sensor in cm
+      error0 = ((float)lineVal0 - (float)ZERO_ERROR_0) / (float)1000;   // Get the error of the sensor in cm
       break;
 
     case PIN_ANALOG_1:
 
       lineVal1 = Get_Line_Value(PIN_ANALOG_1);
-      error1 = ((float)lineVal1 - (float)ZERO_ERROR ) / (float)1000;
+      error1 = ((float)lineVal1 - (float)ZERO_ERROR_1 ) / (float)1000;
       break;
 
     default: break;
@@ -226,7 +233,8 @@ void Calibrate(void){
  * Description: Obtains an average of the readings when reading in from the sensors
  */
 int Read_Average(int select, int num_samples){
-  int i, total;
+  int i;
+  int total = 0;
 
   switch(select){
     case PIN_ANALOG_0: 
@@ -246,7 +254,7 @@ int Read_Average(int select, int num_samples){
     default: return 0;
   }
 
-  return (total/num_samples);                 // Returnin the average from the number of samples
+  return (total/NUM_SAMPLES);                 // Returnin the average from the number of samples
 }
 
 
@@ -263,7 +271,9 @@ int Read_Average(int select, int num_samples){
  */
 unsigned long Get_Line_Value(int select){
  int i;
- unsigned long total, sum, out;
+ unsigned long total = 0;
+ unsigned long sum = 0;
+ unsigned long out = 0;
 
  switch(select){
   case PIN_ANALOG_0: 
@@ -297,12 +307,30 @@ unsigned long Get_Line_Value(int select){
  * Function: Print_Sensor_Values
  * Description: Prints the sensor values of analog0
  */
-void Print_Sensor_Values(void){
+void Print_Sensor_Values(int select){
   int i;
-  for(i=0 ; i<NUM_SENSORS ; i++){
-    Serial.print(",\t"); Serial.print(i); Serial.print(":"); Serial.print(analog0[i]);
+  
+  switch(select){
+    case PIN_ANALOG_0:
+      
+      Serial.print("ANALOG 0 SENSORS:");
+      for(i=0 ; i<NUM_SENSORS ; i++){
+        Serial.print(",\t"); Serial.print(i); Serial.print(":"); Serial.print(analog0[i]);
+      }
+      Serial.println("");
+      break;
+    
+    case PIN_ANALOG_1:
+      
+      Serial.print("ANALOG 1 SENSORS");
+      for(i=0 ; i<NUM_SENSORS ; i++){
+        Serial.print(",\t"); Serial.print(i); Serial.print(":"); Serial.print(analog1[i]);
+      }
+      Serial.println("");
+      break;
+    
+    default: break;
   }
-  Serial.println("");
 }
 
 /*

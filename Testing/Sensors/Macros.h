@@ -19,6 +19,8 @@
 #define SECONDS_8   (8000UL)
 
 #define ZERO_ERROR  (3500)
+#define ZERO_ERROR_1 (2407)
+#define ZERO_ERROR_0 (2475)
 
 #define BLACK_LINE (0)
 #define WHITE_LINE (1)
