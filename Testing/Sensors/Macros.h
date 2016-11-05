@@ -1,12 +1,12 @@
-#define PIN_ANALOG_0 (0)
-#define PIN_ANALOG_1 (1)
+#define PIN_ANALOG_0 (A0)
+#define PIN_ANALOG_1 (A1)
 
 #define PIN_LED_0 (9)
 #define PIN_LED_1 (8)
 
-#define PIN_S2 (12)
-#define PIN_S1 (11)
-#define PIN_S0 (10)
+#define PIN_S2 (A5)
+#define PIN_S1 (A4)
+#define PIN_S0 (A3)
 
 #define PIN_LED_ARDUINO (13)
 
@@ -22,3 +22,8 @@
 
 #define BLACK_LINE (0)
 #define WHITE_LINE (1)
+
+#define ON_LINE_THRESHOLD (800)
+#define OFF_LINE_THRESHOLD (200)
+
+#define NUM_SENSORS (8)

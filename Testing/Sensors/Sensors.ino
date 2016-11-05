@@ -1,7 +1,11 @@
 #include "Macros.h"
+#include "TimerOne.h"
 
-int analog0[8];
-int analog1[8];
+volatile int analog0[NUM_SENSORS];
+volatile int analog1[NUM_SENSORS];
+
+int oldAnalog0[NUM_SENSORS];
+int oldAnalog1[NUM_SENSORS];
 
 int sensorMin = MAX_SENSOR_VAL;        // minimum sensor value
 int sensorMax = MIN_SENSOR_VAL;        // maximum sensor value
@@ -13,65 +17,131 @@ float error0;
 float error1;
 float totalError;
 
+unsigned long timerVal;
+
+enum {INIT, READ_2_LINE, READ_ANALOG0_LINE, READ_ANALOG1_LINE, READ_NO_LINE, INTERSECTION} state = INIT;
+
+#define USE_INTERRUPTS (0)
+
+#if USE_INTERRUPTS
+void timerIsr(){
+    ReadAllSensors(BLACK_LINE);
+}
+#endif
+
+/*
+ * Function: setup
+ * Description: Setting the initial states and calibrating the sensors
+ */
 void setup() {
-  Serial.begin(9600);
-  Init_Sensors();
-
-}
-
-void loop() {
+  state = INIT;                           // Initial state of the FSM
+  Init_Sensors();                         // Initializing the sensors
   
-  ReadAllSensors(BLACK_LINE);
-  Sensor_Error_Calc(PIN_ANALOG_0);
-  Serial.println(error0);
-  //Print_Sensor_Values();
-  //lineVal0 = Get_Line_Value(PIN_ANALOG_0);
-  //Serial.println(lineVal0);
+  #if USE_INTERRUPTS
+    Timer1.initialize(10000);             // set a timer of length 1000 microseconds (or 0.001 sec - or 1000Hz)
+    Timer1.attachInterrupt( timerIsr );   // attach the service routine here
+  #else
+    Serial.begin(9600);
+  #endif
+}
+
+/*
+ * Function: loop
+ * Description: The main the loop of the vehicle
+ */
+void loop() {
+  int a;
+  #if USE_INTERRUPTS
+  
+    if(analog0[4] >500) digitalWrite(13,HIGH);    // Flashing the LED if interrupts are used
+    else digitalWrite(13, LOW);
+    
+  #else
+  
+    Start_Timer();
+    
+    ReadAllSensors(BLACK_LINE);                   // Reads and records all the sensor values
+    FSM();
+
+    Display_Timer();
+    
+    // --- Uncomment any of these below if you want to see specific outputs --- //
+     
+    //Sensor_Error_Calc(PIN_ANALOG_0);
+    //Serial.println(error0);
+    
+    //Print_Sensor_Values();
+    
+    //lineVal0 = Get_Line_Value(PIN_ANALOG_0);
+    //Serial.println(lineVal0);
+    
+  #endif
 
 }
 
+/*
+ * Function: Init_Sensors
+ * Description: Initializing the pins that are used for the sensors.
+ */
 void Init_Sensors(void){
-  pinMode(PIN_S2, OUTPUT);
-  pinMode(PIN_S1, OUTPUT);
-  pinMode(PIN_S0, OUTPUT);
-  pinMode(PIN_LED_0, OUTPUT);
-  pinMode(PIN_LED_1, OUTPUT);
-  pinMode(PIN_LED_ARDUINO, OUTPUT);
-  digitalWrite(PIN_LED_0, HIGH);
-  digitalWrite(PIN_LED_1, HIGH);
+  pinMode(PIN_S2, OUTPUT);            // Select S2 - PIN A5
+  pinMode(PIN_S1, OUTPUT);            // Select S1 - PIN A4
+  pinMode(PIN_S0, OUTPUT);            // Select S0 - PIN A3
+  pinMode(PIN_LED_ARDUINO, OUTPUT);   // Arduino LED
   Calibrate();
 }
 
-void Mux_Select(int sel){
+/*
+ * Function: Mux_Select
+ * Description: Selects the specific mux line depending on the select
+ */
+void Mux_Select(int select){
 
-  switch(sel){
-    case 0: digitalWrite(PIN_S2, LOW); digitalWrite(PIN_S1, LOW); digitalWrite(PIN_S0, LOW);  break;
-    case 1: digitalWrite(PIN_S2, LOW); digitalWrite(PIN_S1, LOW); digitalWrite(PIN_S0, HIGH);  break;
-    case 2: digitalWrite(PIN_S2, LOW); digitalWrite(PIN_S1, HIGH); digitalWrite(PIN_S0, LOW);  break;
-    case 3: digitalWrite(PIN_S2, LOW); digitalWrite(PIN_S1, HIGH); digitalWrite(PIN_S0, HIGH);  break;
-    case 4: digitalWrite(PIN_S2, HIGH); digitalWrite(PIN_S1, LOW); digitalWrite(PIN_S0, LOW);  break;
-    case 5: digitalWrite(PIN_S2, HIGH); digitalWrite(PIN_S1, LOW); digitalWrite(PIN_S0, HIGH);  break;
-    case 6: digitalWrite(PIN_S2, HIGH); digitalWrite(PIN_S1, HIGH); digitalWrite(PIN_S0, LOW);  break;
-    case 7: digitalWrite(PIN_S2, HIGH); digitalWrite(PIN_S1, HIGH); digitalWrite(PIN_S0, HIGH);  break;;
+  switch(select){
+    case 0: digitalWrite(PIN_S2, LOW); digitalWrite(PIN_S1, LOW); digitalWrite(PIN_S0, LOW);  break;    // 000
+    case 1: digitalWrite(PIN_S2, LOW); digitalWrite(PIN_S1, LOW); digitalWrite(PIN_S0, HIGH);  break;   // 001
+    case 2: digitalWrite(PIN_S2, LOW); digitalWrite(PIN_S1, HIGH); digitalWrite(PIN_S0, LOW);  break;   // 010
+    case 3: digitalWrite(PIN_S2, LOW); digitalWrite(PIN_S1, HIGH); digitalWrite(PIN_S0, HIGH);  break;  // 011
+    case 4: digitalWrite(PIN_S2, HIGH); digitalWrite(PIN_S1, LOW); digitalWrite(PIN_S0, LOW);  break;   // 100
+    case 5: digitalWrite(PIN_S2, HIGH); digitalWrite(PIN_S1, LOW); digitalWrite(PIN_S0, HIGH);  break;  // 101
+    case 6: digitalWrite(PIN_S2, HIGH); digitalWrite(PIN_S1, HIGH); digitalWrite(PIN_S0, LOW);  break;  // 110
+    case 7: digitalWrite(PIN_S2, HIGH); digitalWrite(PIN_S1, HIGH); digitalWrite(PIN_S0, HIGH);  break; // 111
     default: return;
   }
 
- 
+  delayMicroseconds(4);   // The delay necessary for the mux to switch
 }
 
 
+/*
+ * Function: Total_Error_Calc
+ * Description: Gives the total error depending on the input
+ */
 void Total_Error_Calc(int select){
-  totalError = (error0 + error1)/2;
+  switch(select){
+    case 0:
+      totalError = error0;                // When the line for sensor 1 has disappeared
+
+    case 1:
+      totalError = error1;                // When the line for sensor 0 has disappeared
+
+    case 2:
+      totalError = (error0 + error1)/2;   // Average of the sensor errors
+  }
 }
 
 
+/*
+ * Function: Sensor_Error_Calc
+ * Description: Calculates the sensor error  in CENTIMENTERS for either sensor 0 or sensor 1
+ */
 void Sensor_Error_Calc(int select){
   
    switch(select){
     case PIN_ANALOG_0:
     
-      lineVal0 = Get_Line_Value(PIN_ANALOG_0);
-      error0 = ((float)lineVal0 - (float)ZERO_ERROR) / (float)1000;
+      lineVal0 = Get_Line_Value(PIN_ANALOG_0);                        // Get the line value between 0 - 7000
+      error0 = ((float)lineVal0 - (float)ZERO_ERROR) / (float)1000;   // Get the error of the sensor in cm
       break;
 
     case PIN_ANALOG_1:
@@ -86,55 +156,63 @@ void Sensor_Error_Calc(int select){
    return;
 }
 
+
+/*
+ * Function: ReadAllSensors
+ * Description: Obtains the values for the sensors for both sensor 0 and sensor 1 and maps the values between 0 - 1023
+ */
 void ReadAllSensors(int invert){
   int tmp0, tmp1, i;
+
+  Array_Copy(PIN_ANALOG_0);                                   // Copying the current values to the old values to have something to hold onto.
+  Array_Copy(PIN_ANALOG_1);
   
-  for(i=0;i<8;i++){
+  for(i=0 ; i<NUM_SENSORS ; i++){
     
-    Mux_Select(i);
+    Mux_Select(i);                                            // Cycling through the mux
     
-    tmp0 = Read_Average(PIN_ANALOG_0, NUM_SAMPLES);
+    tmp0 = Read_Average(PIN_ANALOG_0, NUM_SAMPLES);           // Obtaining an average of the readings
     tmp1 = Read_Average(PIN_ANALOG_1, NUM_SAMPLES);
 
-    tmp0 = map(tmp0, sensorMin, sensorMax, MIN_SENSOR_VAL, MAX_SENSOR_VAL);
+    tmp0 = map(tmp0, sensorMin, sensorMax, MIN_SENSOR_VAL, MAX_SENSOR_VAL);   // Obtaining the sensor values between the calibrated min and max and mapping them between 0 - 1023
     tmp1 = map(tmp1, sensorMin, sensorMax, MIN_SENSOR_VAL, MAX_SENSOR_VAL);
 
-    tmp0 = constrain(tmp0, MIN_SENSOR_VAL, MAX_SENSOR_VAL);
+    tmp0 = constrain(tmp0, MIN_SENSOR_VAL, MAX_SENSOR_VAL);   // Constraining the values between 0 - 1023
     tmp1 = constrain(tmp1, MIN_SENSOR_VAL, MAX_SENSOR_VAL);
 
     if(invert){
-      tmp0 = MAX_SENSOR_VAL - tmp0;
-      tmp1 = MAX_SENSOR_VAL - tmp1;
+      tmp0 = MAX_SENSOR_VAL - tmp0;                           // If we are reading a white line, then the values will invert
+      tmp1 = MAX_SENSOR_VAL - tmp1;                           // NO MATTER WHAT: ~0 -> Off the line    ,     ~1023 -> On the line
     }
     
     analog0[i] = tmp0; 
     analog1[i] = tmp1;
 
   }
-
 }
 
 
+/*
+ * Function: Calibrate
+ * Description: Running through the calibration steps of the sensors
+ */
 void Calibrate(void){
   int i, sensorVal0, sensorVal1;
 
-  digitalWrite(PIN_LED_ARDUINO, HIGH);
+  digitalWrite(PIN_LED_ARDUINO, HIGH);        // Arduino LED ON during calibration
   
-  // calibrate during the first 8 seconds
-  while (millis() < SECONDS_8) {
+  while (millis() < SECONDS_8) {              // calibrate during the first 8 seconds
     
     i++;
-    Mux_Select(floor(i/MULTIPLIER));
+    Mux_Select(floor(i/MULTIPLIER));          // Cycling through the mux every 1 second
 
-    sensorVal0 = analogRead(PIN_ANALOG_0);
+    sensorVal0 = analogRead(PIN_ANALOG_0);    // Reading the sensor
     sensorVal1 = analogRead(PIN_ANALOG_1);
 
-    // record the maximum sensor value
-    if (sensorVal0 > sensorMax) sensorMax = sensorVal0;
+    if (sensorVal0 > sensorMax) sensorMax = sensorVal0;   // record the maximum sensor value
     if (sensorVal1 > sensorMax) sensorMax = sensorVal1;
 
-    // record the minimum sensor value
-    if (sensorVal0 < sensorMin) sensorMin = sensorVal0;
+    if (sensorVal0 < sensorMin) sensorMin = sensorVal0;   // record the minimum sensor value
     if (sensorVal1 < sensorMin) sensorMin = sensorVal1;
   }
 
@@ -143,6 +221,10 @@ void Calibrate(void){
 }
 
 
+/*
+ * Function: Read_Average
+ * Description: Obtains an average of the readings when reading in from the sensors
+ */
 int Read_Average(int select, int num_samples){
   int i, total;
 
@@ -150,7 +232,7 @@ int Read_Average(int select, int num_samples){
     case PIN_ANALOG_0: 
       
       for(i=0 ; i<num_samples ; i++){
-        total += analogRead(PIN_ANALOG_0);
+        total += analogRead(PIN_ANALOG_0);    // Total value from all the samples
       }
       break;
             
@@ -164,10 +246,21 @@ int Read_Average(int select, int num_samples){
     default: return 0;
   }
 
-  return (total/num_samples);
+  return (total/num_samples);                 // Returnin the average from the number of samples
 }
 
 
+/*
+ * Function: Get_Line_Value
+ * Description: Obtaining the value between 0 - 7000 where the center of the line is located according to the sensors
+ * 
+ * Equation Used:     (Sensor0 * 0) + (Sensor1 * 1000) + (Sensor2 * 2000) + (Sensor3 * 3000) ...
+ *                    --------------------------------------------------------------------------
+ *                    (   Sensor0   +       Sensor1     +     Sensor2     +     Sensor3 ...
+ *                    
+ * Exact Center Value = 3500
+ * 
+ */
 unsigned long Get_Line_Value(int select){
  int i;
  unsigned long total, sum, out;
@@ -175,15 +268,15 @@ unsigned long Get_Line_Value(int select){
  switch(select){
   case PIN_ANALOG_0: 
   
-    for(i=0 ; i<8 ; i++){
-      total += analog0[i] * (i * MULTIPLIER);
-      sum += analog0[i];
+    for(i=0 ; i<NUM_SENSORS ; i++){
+      total += analog0[i] * (i * MULTIPLIER);   // Numerator of Equation
+      sum += analog0[i];                        // Denominator of Equation
     }
     break;
       
   case PIN_ANALOG_1: 
   
-    for(i=0 ; i<8 ; i++){
+    for(i=0 ; i<NUM_SENSORS ; i++){
       total += analog1[i] * (i * MULTIPLIER);
       sum += analog1[i];
     }
@@ -192,16 +285,39 @@ unsigned long Get_Line_Value(int select){
   default: return out;
  }
 
- out = total/sum;
+ out = total/sum;                               // Dividing numerator by denominator
  return out;
 }
 
 
+// --- TESTING CODE BELOW ---
+
+
+/*
+ * Function: Print_Sensor_Values
+ * Description: Prints the sensor values of analog0
+ */
 void Print_Sensor_Values(void){
   int i;
-  for(i=0 ; i<8 ; i++){
+  for(i=0 ; i<NUM_SENSORS ; i++){
     Serial.print(",\t"); Serial.print(i); Serial.print(":"); Serial.print(analog0[i]);
   }
   Serial.println("");
+}
+
+/*
+ * Function: Start_Timer
+ * Description: Starts a local timer
+ */
+void Start_Timer(void){
+  timerVal = micros();
+}
+
+/*
+ * Function: Display Timer
+ * Description: Displays the amount of time in MICROSECONDS that has gone by since the timer was started
+ */
+void Display_Timer(void){
+  Serial.println(micros()-timerVal);
 }
 
