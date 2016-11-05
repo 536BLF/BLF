@@ -66,16 +66,18 @@ void loop() {
     //Display_Timer();
     
     // --- Uncomment any of these below if you want to see specific outputs --- //
-     
+    
+    /* 
     Sensor_Error_Calc(PIN_ANALOG_0);
     Serial.print("Analog0:\t"); Serial.print(error0); Serial.print("\t");
     Sensor_Error_Calc(PIN_ANALOG_1);
     Serial.print("Analog0:\t"); Serial.print(error1); Serial.print("\t");
     Total_Error_Calc(2);
     Serial.print("Total:\t"); Serial.println(totalError);
+    */
     
-    //Print_Sensor_Values(PIN_ANALOG_0);
-    //Print_Sensor_Values(PIN_ANALOG_1);
+    Print_Sensor_Values(PIN_ANALOG_0);
+    Print_Sensor_Values(PIN_ANALOG_1);
     
     //lineVal0 = Get_Line_Value(PIN_ANALOG_0);
     //Serial.print("Analog0:\t"); Serial.print(lineVal0); Serial.print("\t");
