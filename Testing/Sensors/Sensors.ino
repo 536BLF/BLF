@@ -9,6 +9,10 @@ int sensorMax = MIN_SENSOR_VAL;        // maximum sensor value
 unsigned long lineVal0;
 unsigned long lineVal1;
 
+float error0;
+float error1;
+float totalError;
+
 void setup() {
   Serial.begin(9600);
   Init_Sensors();
@@ -18,8 +22,11 @@ void setup() {
 void loop() {
   
   ReadAllSensors(BLACK_LINE);
-  lineVal0 = Get_Line_Value(PIN_ANALOG_0);
-  Serial.println(lineVal0);
+  Sensor_Error_Calc(PIN_ANALOG_0);
+  Serial.println(error0);
+  //Print_Sensor_Values();
+  //lineVal0 = Get_Line_Value(PIN_ANALOG_0);
+  //Serial.println(lineVal0);
 
 }
 
@@ -50,6 +57,33 @@ void Mux_Select(int sel){
   }
 
  
+}
+
+
+void Total_Error_Calc(int select){
+  totalError = (error0 + error1)/2;
+}
+
+
+void Sensor_Error_Calc(int select){
+  
+   switch(select){
+    case PIN_ANALOG_0:
+    
+      lineVal0 = Get_Line_Value(PIN_ANALOG_0);
+      error0 = ((float)lineVal0 - (float)ZERO_ERROR) / (float)1000;
+      break;
+
+    case PIN_ANALOG_1:
+
+      lineVal1 = Get_Line_Value(PIN_ANALOG_1);
+      error1 = ((float)lineVal1 - (float)ZERO_ERROR ) / (float)1000;
+      break;
+
+    default: break;
+   }
+
+   return;
 }
 
 void ReadAllSensors(int invert){
