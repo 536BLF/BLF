@@ -76,8 +76,17 @@ void loop() {
     Serial.print("Total:\t"); Serial.println(totalError);
     */
     
+<<<<<<< HEAD
     Print_Sensor_Values(PIN_ANALOG_0);
     Print_Sensor_Values(PIN_ANALOG_1);
+=======
+<<<<<<< HEAD
+    Print_Sensor_Values();
+=======
+    //Print_Sensor_Values(PIN_ANALOG_0);
+    //Print_Sensor_Values(PIN_ANALOG_1);
+>>>>>>> f2fecf09747de95d9aad707769f2c41213b1a61f
+>>>>>>> 4527f48a4ac592901504748ccdb9c0545f62f10f
     
     //lineVal0 = Get_Line_Value(PIN_ANALOG_0);
     //Serial.print("Analog0:\t"); Serial.print(lineVal0); Serial.print("\t");
@@ -236,7 +245,11 @@ void Calibrate(void){
  */
 int Read_Average(int select, int num_samples){
   int i;
+<<<<<<< HEAD
+  int total =0;
+=======
   int total = 0;
+>>>>>>> f2fecf09747de95d9aad707769f2c41213b1a61f
 
   switch(select){
     case PIN_ANALOG_0: 

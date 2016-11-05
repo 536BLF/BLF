@@ -38,4 +38,5 @@
 // motor input1 and input2 they should be PWM signals
 #define SPEEDPIN1 3
 #define SPEEDPIN2 14
+#define MOTOR DELAY 500
 // motor output1 and 2   those pins are decided by pin configuration in Datasheet
