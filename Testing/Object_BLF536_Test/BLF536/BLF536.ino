@@ -1,5 +1,5 @@
 #include "Macros.h"
-#include <AFMotor.h>
+//#include <AFMotor.h>
 
 class Sensor{
   public:
@@ -61,8 +61,12 @@ class Car
 
     // Variables
     float totalError;
+    boolean sysIdCompleted = false;
     int pwmSetSpeed=SETSPEED;
     int motorDiffPWM;
+    unsigned long timer = 0;
+    unsigned long totalTimer;
+    unsigned long delta;
     double Kprop;
     double refPoint;
 
@@ -70,6 +74,8 @@ class Car
     void MotorDiff(void);
     void sysId(void);
     void Total_Error_Calc(int);
+    void Sample_Time(void);
+    void System_Identification(void);
 
     // Constructor
     Car();
@@ -83,24 +89,27 @@ void setup(){
 
   leftSensor.Init_Sensors();
   rightSensor.Init_Sensors();
+  
+  BLF536.delta = millis() + (5000UL);
 }
 
 
 void loop(){
-  tester.Start_Timer();
+  // tester.Start_Timer();
+  
+  BLF536.Sample_Time();
+  
+  BLF536.System_Identification();
   
   leftSensor.ReadAllSensors();
   rightSensor.ReadAllSensors();
-  
-  //BLF536.sysId();
-
 
   
   // --- Uncomment any of these below if you want to see specific outputs --- //
 
-  // tester.Print_Total_Error();
+  tester.Print_Total_Error();
   // tester.Print_SensorValues();
   // tester.Print_Line_Val();
   
-  tester.Display_Timer();
+  // tester.Display_Timer();
 }

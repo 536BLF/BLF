@@ -1,7 +1,8 @@
 Sensor::Sensor(const uint8_t& pinVal, int whiteLine) {
   this->pin = pinVal;
   this->whiteLine = whiteLine;
-  this->sensorMin = MAX_SENSOR_VAL;        // minimum sensor value
+  
+  this->sensorMin = MAX_SENSOR_VAL;
   this->sensorMax = MIN_SENSOR_VAL;
 }
 
