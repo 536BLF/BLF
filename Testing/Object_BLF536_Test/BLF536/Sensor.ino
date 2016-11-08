@@ -1,6 +1,8 @@
 Sensor::Sensor(const uint8_t& pinVal, int whiteLine) {
   this->pin = pinVal;
   this->whiteLine = whiteLine;
+  this->sensorMin = MAX_SENSOR_VAL;        // minimum sensor value
+  this->sensorMax = MIN_SENSOR_VAL;
 }
 
 void Sensor::Mux_Select(int muxSelect) {
@@ -37,7 +39,7 @@ void Sensor::Calibrate(void) {
 
   digitalWrite(PIN_LED_ARDUINO, HIGH);        // Arduino LED ON during calibration
 
-  while (millis() < SECONDS_8) {              // calibrate during the first 8 seconds
+  while (i < SECONDS_8) {                     // calibrate during the first 8 seconds
 
     i++;
     this->Mux_Select(floor(i / MULTIPLIER));    // Cycling through the mux every 1 second
@@ -45,8 +47,8 @@ void Sensor::Calibrate(void) {
     sensorVal = analogRead(this->pin);    // Reading the sensor
 
     if (sensorVal > this->sensorMax) this->sensorMax = sensorVal;   // record the maximum sensor value
-
     if (sensorVal < this->sensorMin) this->sensorMin = sensorVal;   // record the minimum sensor value
+    
   }
 
   this->ReadAllSensors();
@@ -59,26 +61,27 @@ void Sensor::Calibrate(void) {
 
 
 void Sensor::ReadAllSensors(void) {
-  int tmp = 0, i = 0;
-
+  int i = 0;
+  this->tmp = 0;
+  
   this->Array_Copy();                                   // Copying the current values to the old values to have something to hold onto.
 
   for (i = 0 ; i < NUM_SENSORS ; i++) {
 
     this->Mux_Select(i);                                            // Cycling through the mux
 
-    tmp = this->Read_Average();     // Obtaining an average of the readings
-    Serial.print(this->pin);  Serial.print(" ");  Serial.println(tmp);
+    this->tmp = this->Read_Average();     // Obtaining an average of the readings
+    //Serial.print(this->pin);  Serial.print(" ");  Serial.println(tmp);
 
-    tmp = map(tmp, this->sensorMin, this->sensorMax, MIN_SENSOR_VAL, MAX_SENSOR_VAL);   // Obtaining the sensor values between the calibrated min and max and mapping them between 0 - 1023
+    this->tmp = map(this->tmp, this->sensorMin, this->sensorMax, MIN_SENSOR_VAL, MAX_SENSOR_VAL);   // Obtaining the sensor values between the calibrated min and max and mapping them between 0 - 1023
 
-    tmp = constrain(tmp, MIN_SENSOR_VAL, MAX_SENSOR_VAL);   // Constraining the values between 0 - 1023
+    this->tmp = constrain(this->tmp, MIN_SENSOR_VAL, MAX_SENSOR_VAL);   // Constraining the values between 0 - 1023
 
     if (this->whiteLine) {
-      tmp = MAX_SENSOR_VAL - tmp;                           // If we are reading a white line, then the values will invert
+      this->tmp = MAX_SENSOR_VAL - this->tmp;                           // If we are reading a white line, then the values will invert
     }
 
-    this->sensorVals_T0[i] = tmp;
+    this->sensorVals_T0[i] = this->tmp;
 
   }
 }
@@ -87,6 +90,7 @@ void Sensor::ReadAllSensors(void) {
 void Sensor::Array_Copy(void) {
   int i;
   for (i = 0 ; i < NUM_SENSORS ; i++) {
+    this->sensorVals_T2[i] = this->sensorVals_T1[i];
     this->sensorVals_T1[i] = this->sensorVals_T0[i];
   }
 }
@@ -129,11 +133,3 @@ void Sensor::Sensor_Error_Calc(void) {
 }
 
 
-void Sensor::Print_Sensor_Values(void) {
-  int i;
-
-  Serial.print("Pin "); Serial.print(this->pin); Serial.print(" Sensors: ");
-  for (i = 0 ; i < NUM_SENSORS ; i++) {
-    Serial.print(",\t"); Serial.print(i); Serial.print(":"); Serial.print(this->sensorVals_T0[i]);
-  }
-}
