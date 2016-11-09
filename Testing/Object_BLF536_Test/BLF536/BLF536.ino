@@ -1,6 +1,9 @@
 #include "Macros.h"
 //#include <AFMotor.h>
 
+enum {INIT, READ_2_LINE, READ_LEFT_LINE, READ_RIGHT_LINE, READ_NO_LINE, INTERSECTION} state = INIT;
+
+
 class Sensor {
   public:
     //variables
@@ -30,6 +33,7 @@ class Sensor {
     void Mux_Select(int);
     void Array_Copy(void);
     int Read_Average(void);
+    void Hold_Value(void);
 
     // Constructor
     Sensor(const uint8_t&, int);
@@ -38,6 +42,7 @@ class Sensor {
 
 Sensor leftSensor(PIN_ANALOG_0, BLACK_LINE);
 Sensor rightSensor(PIN_ANALOG_1, BLACK_LINE);
+
 
 class Tester {
   public:
@@ -111,8 +116,8 @@ void loop() {
 
   BLF536.System_Identification();
 
-  //leftSensor.ReadAllSensors();
-  //rightSensor.ReadAllSensors();
+  leftSensor.ReadAllSensors();
+  rightSensor.ReadAllSensors();
 
   leftSensor.Sensor_Error_Calc();
   rightSensor.Sensor_Error_Calc();

@@ -28,7 +28,7 @@
 
 #define SAMPLING_TIME (10)  // in MILLISECONDS (T)
 
-#define NUM_SAMPLES (1000UL) // number of samples to take every T seconds
+#define MAX_NUM_SAMPLES (1000UL) // number of samples to take every T seconds
 #define DELTA_TIME (5000UL) // delta in MILLISECONDS before step error input
 #define ERROR_INPUT  (1000UL) // the error step input
 

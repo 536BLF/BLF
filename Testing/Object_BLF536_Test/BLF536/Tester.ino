@@ -59,12 +59,12 @@ void Tester::Display_Timer(void){
 
 void Tester::System_Id(void){
   
-  if( this->sample < NUM_SAMPLES && BLF536.delta < millis()){
+  if( this->sample < MAX_NUM_SAMPLES && BLF536.delta < millis()){
     Serial.print(this->sample);
     Serial.print(",");
-    Serial.println(BLF536.totalError);
+    Serial.print(BLF536.totalError);
+    Serial.println(",");
     this->sample++;
   }
-  
 }
 

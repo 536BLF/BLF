@@ -134,3 +134,10 @@ void Sensor::Sensor_Error_Calc(void) {
 }
 
 
+void Sensor::Hold_Value(void){
+  for (int i = 0 ; i < NUM_SENSORS ; i++) {
+    this->sensorVals_T0[i] = this->sensorVals_T1[i];
+  }
+}
+
+
