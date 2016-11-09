@@ -60,18 +60,27 @@ void Car::Sample_Time(void){
   
   this->timer = this->timer + SAMPLING_TIME;
   
-  
 }
 
 
+
+/*
+* Function: System_Identification
+* Description: Gives a step error input of DELTA_VAL at DELTA_TIME
+*/
 void Car::System_Identification(void){
+
+  if(this->delta == 0){
+    delta = millis() + DELTA_TIME;
+    return;
+  }
   
-  if(this->delta < millis()) return;
-  
+  if(this->delta > millis()) return;
+    
   if(this->sysIdCompleted) return;
   
-  rightSensor.initLineVal = rightSensor.initLineVal - 1000UL;
-  leftSensor.initLineVal = leftSensor.initLineVal - 1000UL;
+  rightSensor.initLineVal = rightSensor.initLineVal + ERROR_INPUT;
+  leftSensor.initLineVal = leftSensor.initLineVal - ERROR_INPUT;
   this->sysIdCompleted = true;
   
 }

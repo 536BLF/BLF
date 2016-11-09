@@ -1,7 +1,7 @@
 #include "Macros.h"
 //#include <AFMotor.h>
 
-class Sensor{
+class Sensor {
   public:
     //variables
     int whiteLine;
@@ -18,7 +18,7 @@ class Sensor{
     unsigned long initLineVal;
     unsigned long timerVal;
 
-    
+
     // Functions
     void MotorDiff();
     void sysId();
@@ -30,7 +30,7 @@ class Sensor{
     void Mux_Select(int);
     void Array_Copy(void);
     int Read_Average(void);
-    
+
     // Constructor
     Sensor(const uint8_t&, int);
 
@@ -39,15 +39,17 @@ class Sensor{
 Sensor leftSensor(PIN_ANALOG_0, BLACK_LINE);
 Sensor rightSensor(PIN_ANALOG_1, BLACK_LINE);
 
-class Tester{
+class Tester {
   public:
-    long int timerVal;
-  
+    unsigned long timerVal;
+    unsigned long sample = 0;
+
     void Print_Sensor_Values(void);
     void Print_Line_Values(void);
     void Print_Total_Error(void);
     void Start_Timer(void);
     void Display_Timer(void);
+    void System_Id(void);
 
     Tester();
 };
@@ -60,13 +62,12 @@ class Car
   public:
 
     // Variables
-    float totalError;
     boolean sysIdCompleted = false;
-    int pwmSetSpeed=SETSPEED;
+    int pwmSetSpeed = SETSPEED;
     int motorDiffPWM;
+    float totalError;
     unsigned long timer = 0;
-    unsigned long totalTimer;
-    unsigned long delta;
+    unsigned long delta = 0;
     double Kprop;
     double refPoint;
 
@@ -84,32 +85,47 @@ class Car
 Car BLF536;
 
 
-void setup(){
+/*
+* Function: setup
+* Description: Initializes our loop
+*/
+void setup() {
   Serial.begin(9600);
 
   leftSensor.Init_Sensors();
   rightSensor.Init_Sensors();
-  
-  BLF536.delta = millis() + (5000UL);
+
+  BLF536.System_Identification();
 }
 
 
-void loop(){
+/*
+* Function: loop
+* Description: Our main while loop that runs forever
+*/
+void loop() {
+  // Serial.println("here");
   // tester.Start_Timer();
-  
-  BLF536.Sample_Time();
-  
-  BLF536.System_Identification();
-  
-  leftSensor.ReadAllSensors();
-  rightSensor.ReadAllSensors();
 
-  
+  BLF536.Sample_Time();
+
+  BLF536.System_Identification();
+
+  //leftSensor.ReadAllSensors();
+  //rightSensor.ReadAllSensors();
+
+  leftSensor.Sensor_Error_Calc();
+  rightSensor.Sensor_Error_Calc();
+
+  BLF536.Total_Error_Calc(2);
+
+
   // --- Uncomment any of these below if you want to see specific outputs --- //
 
-  tester.Print_Total_Error();
-  // tester.Print_SensorValues();
+  tester.System_Id();
+  // tester.Print_Total_Error();
+  // tester.Print_Sensor_Values();
   // tester.Print_Line_Val();
-  
+
   // tester.Display_Timer();
 }

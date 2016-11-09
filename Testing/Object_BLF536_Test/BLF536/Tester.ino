@@ -57,3 +57,14 @@ void Tester::Display_Timer(void){
 }
 
 
+void Tester::System_Id(void){
+  
+  if( this->sample < NUM_SAMPLES && BLF536.delta < millis()){
+    Serial.print(this->sample);
+    Serial.print(",");
+    Serial.println(BLF536.totalError);
+    this->sample++;
+  }
+  
+}
+

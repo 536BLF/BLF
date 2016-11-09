@@ -129,7 +129,7 @@ void Sensor::Get_Line_Value(void) {
 void Sensor::Sensor_Error_Calc(void) {
 
   Get_Line_Value();                        // Get the line value between 0 - 7000
-  this->error = ((float)this->lineVal - (float)this->initLineVal) / (float)1000;   // Get the error of the sensor in cm
+  this->error = ((float)this->lineVal - (float)this->initLineVal) / (float)1000UL;   // Get the error of the sensor in cm
 
 }
 
