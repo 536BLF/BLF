@@ -1,6 +1,6 @@
 #include <AFMotor.h>
 
-AF_DCMotor motor(1, MOTOR12_64KHZ); // create motor #1, 64KHz pwm
+AF_DCMotor motor(1, MOTOR12_1KHZ); // create motor #1, 64KHz pwm
 
 void setup() {
   Serial.begin(9600);           // set up Serial library at 9600 bps

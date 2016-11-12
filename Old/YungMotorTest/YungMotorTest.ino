@@ -2,10 +2,6 @@
 #include "Macros.h"
 
 
-
-
-
-
 class car
 {
   private:
@@ -30,7 +26,6 @@ class car
     float error1;
     float totalError;
     int pwmSetSpeed;
-    int 
     unsigned long lineVal0;
     unsigned long lineVal1;
     unsigned long initLineVal0;
