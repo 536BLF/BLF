@@ -129,9 +129,11 @@ void loop(){
 
   // --- SENSORS --- //
   BLF536.Read_Sensors_And_Obtain_Errors();
+  
+  // --- CONTROLLER --- //
+  BLF536.Controller();
 
   // --- MOTOR CONTROL --- //
-  BLF536.motorDiffPWM=100;
   BLF536.MotorDiff();
 
   

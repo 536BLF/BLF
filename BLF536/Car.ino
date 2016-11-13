@@ -148,3 +148,9 @@ void Car::System_Identification(void){
 }
 
 
+void Car::Controller(){
+  
+  // Proportional controller, error times a constant = motor differential
+  this->motorDiffPWM = KPROP * this->totalError; 
+}
+

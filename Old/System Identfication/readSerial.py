@@ -3,10 +3,10 @@ import serial
 print "Beginning System Identification"
 
 # ----- FOR MACS ONLY -----
-# ser = serial.Serial('/dev/tty.usbmodem1411', 9600)
+ser = serial.Serial('/dev/tty.usbmodem1411', 9600)
 
 # ----- FOR WINDOWS ONLY -----
-ser = serial.Serial('COM5', 9600)
+# ser = serial.Serial('COM5', 9600)
 
 # ----- KEEP NUM_SAMPLES UPDATED -----
 NUM_SAMPLES = 1000

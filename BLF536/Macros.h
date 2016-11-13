@@ -36,7 +36,7 @@
 
 #define SETSPEED              (175)               //arbitrary
 #define ZEROREFTIME           (1000)              //Delay before unit step kicks in
-#define KPROP                 (100)               //Proportional controller constant
+#define KPROP                 (1)                 //Proportional controller constant
 #define DIRECTIONPIN1         (7)
 #define DIRECTIONPIN2         (10)
 

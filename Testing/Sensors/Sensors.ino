@@ -61,7 +61,7 @@ void loop() {
     //Start_Timer();
     
     ReadAllSensors(BLACK_LINE);                   // Reads and records all the sensor values
-    FSM();
+    //FSM();
 
     //Display_Timer();
     
@@ -76,17 +76,9 @@ void loop() {
     Serial.print("Total:\t"); Serial.println(totalError);
     */
     
-<<<<<<< HEAD
     Print_Sensor_Values(PIN_ANALOG_0);
     Print_Sensor_Values(PIN_ANALOG_1);
-=======
-<<<<<<< HEAD
-    Print_Sensor_Values();
-=======
-    //Print_Sensor_Values(PIN_ANALOG_0);
-    //Print_Sensor_Values(PIN_ANALOG_1);
->>>>>>> f2fecf09747de95d9aad707769f2c41213b1a61f
->>>>>>> 4527f48a4ac592901504748ccdb9c0545f62f10f
+    //Print_Sensor_Values();
     
     //lineVal0 = Get_Line_Value(PIN_ANALOG_0);
     //Serial.print("Analog0:\t"); Serial.print(lineVal0); Serial.print("\t");
@@ -189,8 +181,8 @@ void ReadAllSensors(int invert){
     
     Mux_Select(i);                                            // Cycling through the mux
     
-    tmp0 = Read_Average(PIN_ANALOG_0, NUM_SAMPLES);           // Obtaining an average of the readings
-    tmp1 = Read_Average(PIN_ANALOG_1, NUM_SAMPLES);
+    tmp0 = analogRead(PIN_ANALOG_0);           // Obtaining an average of the readings
+    tmp1 = analogRead(PIN_ANALOG_1);
 
     tmp0 = map(tmp0, sensorMin, sensorMax, MIN_SENSOR_VAL, MAX_SENSOR_VAL);   // Obtaining the sensor values between the calibrated min and max and mapping them between 0 - 1023
     tmp1 = map(tmp1, sensorMin, sensorMax, MIN_SENSOR_VAL, MAX_SENSOR_VAL);
@@ -243,13 +235,11 @@ void Calibrate(void){
  * Function: Read_Average
  * Description: Obtains an average of the readings when reading in from the sensors
  */
+ /*
 int Read_Average(int select, int num_samples){
   int i;
-<<<<<<< HEAD
   int total =0;
-=======
   int total = 0;
->>>>>>> f2fecf09747de95d9aad707769f2c41213b1a61f
 
   switch(select){
     case PIN_ANALOG_0: 
@@ -271,7 +261,7 @@ int Read_Average(int select, int num_samples){
 
   return (total/NUM_SAMPLES);                 // Returnin the average from the number of samples
 }
-
+*/
 
 /*
  * Function: Get_Line_Value
