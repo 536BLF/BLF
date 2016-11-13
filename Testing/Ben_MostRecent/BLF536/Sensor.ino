@@ -1,7 +1,10 @@
+//#include "Sensor.h"
+#include "Macros.h"
+
 Sensor::Sensor(const uint8_t& pinVal, int whiteLine) {
   this->pin = pinVal;
   this->whiteLine = whiteLine;
-  
+
   this->sensorMin = MAX_SENSOR_VAL;
   this->sensorMax = MIN_SENSOR_VAL;
 }
@@ -49,7 +52,7 @@ void Sensor::Calibrate(void) {
 
     if (sensorVal > this->sensorMax) this->sensorMax = sensorVal;   // record the maximum sensor value
     if (sensorVal < this->sensorMin) this->sensorMin = sensorVal;   // record the minimum sensor value
-    
+
   }
 
   this->ReadAllSensors();
@@ -64,7 +67,7 @@ void Sensor::Calibrate(void) {
 void Sensor::ReadAllSensors(void) {
   int i = 0;
   this->tmp = 0;
-  
+
   this->Array_Copy();                                   // Copying the current values to the old values to have something to hold onto.
 
   for (i = 0 ; i < NUM_SENSORS ; i++) {
@@ -134,7 +137,7 @@ void Sensor::Sensor_Error_Calc(void) {
 }
 
 
-void Sensor::Hold_Value(void){
+void Sensor::Hold_Value(void) {
   for (int i = 0 ; i < NUM_SENSORS ; i++) {
     this->sensorVals_T0[i] = this->sensorVals_T1[i];
   }
