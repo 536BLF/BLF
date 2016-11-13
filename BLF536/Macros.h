@@ -25,7 +25,7 @@
 
 #define SAMPLING_TIME         (10)      // Sampling time (T) in MILLISECONDS
 
-#define BEGIN_TIME            (3000UL)            // Time to begin system impulse for system identification and to begin recording
+#define BEGIN_TIME            (2000UL)            // Time to begin system impulse for system identification and to begin recording
 #define DELTA_TIME            (BEGIN_TIME + 5);   // Complete the impulse for the system identification one T later
 #define IMPULSE_VALUE         (1000UL)            //  The error to create for the system identification IN MILLIMETERS
 #define MAX_NUM_SAMPLES       (500)               // Number of samples to record

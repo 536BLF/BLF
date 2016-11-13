@@ -30,8 +30,8 @@ void Car::MotorDiff(){
   
   this->MotorRightPtr->setSpeed(RightSpeed);
   this->MotorLeftPtr->setSpeed(LeftSpeed);
-  this->MotorRightPtr->run(BACKWARD);
-  this->MotorLeftPtr->run(BACKWARD);
+  this->MotorRightPtr->run(FORWARD);
+  this->MotorLeftPtr->run(FORWARD);
  
 }
 

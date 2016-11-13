@@ -23,8 +23,6 @@ class Sensor{
     unsigned long initLineVal;                  // Initialized line value based on where the car begins
     
     // Functions
-    void MotorDiff();
-    void sysId();
     void Init_Sensors();
     void Read_All_Sensors(void);
     void Get_Line_Value(void);
@@ -41,8 +39,8 @@ class Sensor{
 };
 
 // Initializing the left sensor and the right sensor arrays
-Sensor leftSensor(PIN_ANALOG_0, BLACK_LINE);
-Sensor rightSensor(PIN_ANALOG_1, BLACK_LINE);
+Sensor leftSensor(PIN_ANALOG_0, WHITE_LINE);
+Sensor rightSensor(PIN_ANALOG_1, WHITE_LINE);
 
 
 class Tester{
