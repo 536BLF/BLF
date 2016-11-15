@@ -85,11 +85,13 @@ void Tester::Display_Timer(void){
  * Description: Prints the sample number and the total error for the system identification in a CSV format
  */
 void Tester::SystemId(void){
-  if(this->sample < MAX_NUM_SAMPLES && BLF536.beginTime < millis()){
+  if(/*this->sample < MAX_NUM_SAMPLES && */BLF536.beginTime < millis()){
+    /*
     Serial.print(this->sample);
-    Serial.print(",");
-    Serial.print(BLF536.totalError);
-    Serial.println(",");
+    */
+    //Serial.print("\t,OUTPUT:\t");
+    Serial.println(BLF536.totalError + 1);
+    //Serial.println(",");
     this->sample++;
   }
 }

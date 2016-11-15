@@ -7,13 +7,13 @@
 
 #define PIN_LED_ARDUINO       (13)      // Arduino LED pin 13 for digital output
 
-#define MULTIPLIER            (1000UL)  // General 1000 multiplier - used for various conversions
+#define MULTIPLIER            (1000L)  // General 1000 multiplier - used for various conversions
 
-#define MIN_SENSOR_VAL        (0)       // Min sensor value = 0
-#define MAX_SENSOR_VAL        (1023)    // Max sensor value = 1023
+#define MIN_SENSOR_VAL        (0L)       // Min sensor value = 0
+#define MAX_SENSOR_VAL        (1023L)    // Max sensor value = 1023
 
-#define NUM_SAMPLES           (4)       // Number of samples to average
-#define CALIBRATION_AMOUNT    (8000UL)  // Calibration limit
+#define NUM_SAMPLES           (1L)       // Number of samples to average
+#define CALIBRATION_AMOUNT    (8000L)  // Calibration limit
 
 #define BLACK_LINE            (0)       // Black or white line selection
 #define WHITE_LINE            (1)
@@ -23,27 +23,28 @@
 
 #define NUM_SENSORS           (8)       // Number of sensors on the sensor array
 
-#define SAMPLING_TIME         (10)      // Sampling time (T) in MILLISECONDS
+#define SAMPLING_TIME         (25)      // Sampling time (T) in MILLISECONDS
 
-#define BEGIN_TIME            (2000UL)            // Time to begin system impulse for system identification and to begin recording
+#define BEGIN_TIME            (1000UL)            // Time to begin system impulse for system identification and to begin recording
 #define DELTA_TIME            (BEGIN_TIME + 5);   // Complete the impulse for the system identification one T later
-#define IMPULSE_VALUE         (1000UL)            //  The error to create for the system identification IN MILLIMETERS
+#define IMPULSE_VALUE         (1000L)             //  The error to create for the system identification IN MILLIMETERS
 #define MAX_NUM_SAMPLES       (500)               // Number of samples to record
 
 
 // --- EVERYTHING BELOW THIS NEEDS TO BE UPDATED WITH COMMENTS --- //
 
 
-#define SETSPEED              (175)               //arbitrary
+#define SETSPEED              (125L)               //arbitrary
+#define MAX_SPEED_VAL         (255L)
 #define ZEROREFTIME           (1000)              //Delay before unit step kicks in
-#define KPROP                 (1)                 //Proportional controller constant
+#define KPROP                 (6L)              //Proportional controller constant
 #define DIRECTIONPIN1         (7)
 #define DIRECTIONPIN2         (10)
 
 // Motor input1 and input2 they should be PWM signals
-#define SPEEDPIN1 (3)
-#define SPEEDPIN2 (14)
-#define MOTOR DELAY (500)
+#define SPEEDPIN1             (3)
+#define SPEEDPIN2             (14)
+#define MOTOR DELAY           (500)
 // Motor output1 and 2   those pins are decided by pin configuration in Datasheet
 
 #define STRAIGHTTIME 1000

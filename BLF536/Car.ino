@@ -14,22 +14,31 @@ Car::Car(){
  * Description: Motor Control
  */
 void Car::MotorDiff(){
-  int RightSpeed;
-  int LeftSpeed;
-  
+  double rightSpeed;
+  double leftSpeed;
+ 
   //assume diffvalue < 0 as right turn and >0 is a LEFT turn
-  if(this->motorDiffPWM > (255 - this->pwmSetSpeed)){
-    this->motorDiffPWM = 255 - this->pwmSetSpeed;
+  if(this->motorDiffPWM > (MAX_SPEED_VAL - this->pwmSetSpeed)){
+    this->motorDiffPWM = MAX_SPEED_VAL - this->pwmSetSpeed;
   }
-  else if (this->motorDiffPWM < (this->pwmSetSpeed - 255)){
-    this->motorDiffPWM = (this->pwmSetSpeed - 255);
+  else if (this->motorDiffPWM < (this->pwmSetSpeed - MAX_SPEED_VAL)){
+    this->motorDiffPWM = (this->pwmSetSpeed - MAX_SPEED_VAL);
     }
     
-  LeftSpeed = this->pwmSetSpeed - (this->motorDiffPWM / 2);
-  RightSpeed = this->pwmSetSpeed + (this->motorDiffPWM / 2);
-  
-  this->MotorRightPtr->setSpeed(RightSpeed);
-  this->MotorLeftPtr->setSpeed(LeftSpeed);
+  leftSpeed = this->pwmSetSpeed + (this->motorDiffPWM);
+  rightSpeed = this->pwmSetSpeed - (this->motorDiffPWM);
+
+  if(leftSpeed  > 255){ leftSpeed   = 255; }
+  if(rightSpeed > 255){ rightSpeed  = 255; }
+  if(leftSpeed  < 0)  { leftSpeed   = 0; }
+  if(rightSpeed < 0)  { rightSpeed  = 0; }
+
+  //Serial.print("\t,LEFT:\t"); Serial.print(leftSpeed);
+  //Serial.print("\t,RIGHT:\t"); Serial.print(rightSpeed);
+  //Serial.print("\t");
+
+  this->MotorRightPtr->setSpeed(rightSpeed);
+  this->MotorLeftPtr->setSpeed(leftSpeed);
   this->MotorRightPtr->run(FORWARD);
   this->MotorLeftPtr->run(FORWARD);
  
@@ -42,20 +51,35 @@ void Car::MotorDiff(){
  * Description: Obtains the total error calculation depending on which sensors are sensing the line
  */
 void Car::Total_Error_Calc(int select){
+  
   switch(select){
     
     // When the line for the left sensor has dissappeared - use the left sensor error
     case 0:         
-      this->totalError = leftSensor.error;                              
+      this->totalError = leftSensor.error; 
+      break;      
 
     // When the line for the right sensor has dissappeared - use the right sensor error
     case 1:
-      this->totalError = rightSensor.error;                              
+      this->totalError = rightSensor.error;    
+      break;      
 
     // When sensing both sensors over the line - average the errors
     case 2:
-      this->totalError = ((leftSensor.error) + rightSensor.error) / 2;   
+      /*
+      if(rightSensor.error > 5 && leftSensor.error > 5){
+        rightSensor.error = 0;
+        leftSensor.error = 0;
+      } else if(rightSensor.error > 5){
+        rightSensor.error = leftSensor.error;
+      } else if(leftSensor.error > 5){
+        leftSensor.error = rightSensor.error;
+      }
+      */
+      this->totalError = (leftSensor.error + rightSensor.error) / (float)2;
+      break;   
   }
+  if(this->totalError > 5) this->totalError = 0;
 }
 
 
@@ -100,7 +124,7 @@ void Car::Read_Sensors_And_Obtain_Errors(void){
   rightSensor.Sensor_Error_Calc();
 
   // Calculating the total error for 2 lines
-  BLF536.Total_Error_Calc(2);
+  this->Total_Error_Calc(2);
 }
 
 
@@ -131,16 +155,16 @@ void Car::System_Identification(void){
 
   // If we have not began the impulse - create the impulse by changing the initialized line value
   if(!this->impulseBegin){
-    rightSensor.initLineVal = rightSensor.initLineVal - IMPULSE_VALUE;
-    leftSensor.initLineVal = leftSensor.initLineVal - IMPULSE_VALUE;
+    rightSensor.initLineVal = rightSensor.initLineVal + IMPULSE_VALUE;
+    leftSensor.initLineVal = leftSensor.initLineVal + IMPULSE_VALUE;
     this->impulseBegin = true;
-
+  /*
   // End the impulse
   // In the next time sample after we began our impulse, we will be here to bring the initialized value back to 0, completing the impulse
   } else {
     rightSensor.initLineVal = rightSensor.initLineVal + IMPULSE_VALUE;
     leftSensor.initLineVal = leftSensor.initLineVal + IMPULSE_VALUE;
-
+  */
     // Create this impulse once
     this->impulseEnd = true;
   }
@@ -149,7 +173,6 @@ void Car::System_Identification(void){
 
 
 void Car::Controller(){
-  
   // Proportional controller, error times a constant = motor differential
   this->motorDiffPWM = KPROP * this->totalError; 
 }

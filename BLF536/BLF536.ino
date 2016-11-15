@@ -11,16 +11,16 @@ class Sensor{
   
     // Variables
     int           whiteLine;                    // Whether we are reading a black or white line
-    int           sensorVals_T0[NUM_SENSORS];   // Sensor values for T = 0
-    int           sensorVals_T1[NUM_SENSORS];   // Sensor valeus for T = -1 (Sensor values from one time interval before
-    int           sensorVals_T2[NUM_SENSORS];   // Sensor valeus for T = -2 (Sensor values from two time intervals before
-    int           sensorMin;                    // Minimum sensor value
-    int           sensorMax;                    // Maximum sensor value
-    int           tmp;                          // Temporary value for sensor readings
     uint8_t       pin;                          // Analog input pin select for the sensor
-    float         error;                        // Error value for the sensor - between -3.5 and 3.5 CENTIMETERS
-    unsigned long lineVal;                      // The line value calculated from the current sensor values - between 0 and 7000
-    unsigned long initLineVal;                  // Initialized line value based on where the car begins
+    double        sensorVals_T0[NUM_SENSORS];   // Sensor values for T = 0
+    double        sensorVals_T1[NUM_SENSORS];   // Sensor valeus for T = -1 (Sensor values from one time interval before
+    double        sensorVals_T2[NUM_SENSORS];   // Sensor valeus for T = -2 (Sensor values from two time intervals before
+    double        sensorMin;                    // Minimum sensor value
+    double        sensorMax;                    // Maximum sensor value
+    double        tmp;                          // Temporary value for sensor readings
+    double        error;                        // Error value for the sensor - between -3.5 and 3.5 CENTIMETERS
+    double        lineVal;                      // The line value calculated from the current sensor values - between 0 and 7000
+    double        initLineVal;                  // Initialized line value based on where the car begins
     
     // Functions
     void Init_Sensors();
@@ -39,8 +39,8 @@ class Sensor{
 };
 
 // Initializing the left sensor and the right sensor arrays
-Sensor leftSensor(PIN_ANALOG_0, WHITE_LINE);
-Sensor rightSensor(PIN_ANALOG_1, WHITE_LINE);
+Sensor leftSensor(PIN_ANALOG_0, BLACK_LINE);
+Sensor rightSensor(PIN_ANALOG_1, BLACK_LINE);
 
 
 class Tester{
@@ -73,12 +73,13 @@ class Car
     // Variables
     boolean       impulseBegin      = false;      // Whether or not we have began the impulse for the system identification
     boolean       impulseEnd        = false;      // Whether or not we have completed the impulse for the system identification
-    int           pwmSetSpeed       = SETSPEED;   // Setting the PWM speed
-    int           motorDiffPWM;                   // The motor differential PWM
     unsigned long deltaTime;                      // How long to hold the impulse for the system identification
     unsigned long beginTime         = 0;          // When to begin the impulse for the system identification
     unsigned long timer             = 0;          // Timer to ensure that the each loop runs T second intervals
-    float         totalError;                     // The total error of the vehicle from its calibrated location
+    double        totalError_T1;
+    double        totalError;                     // The total error of the vehicle from its calibrated location
+    double        pwmSetSpeed       = SETSPEED;   // Setting the PWM speed
+    double        motorDiffPWM;                   // The motor differential PWM
     AF_DCMotor    *MotorRightPtr;
     AF_DCMotor    *MotorLeftPtr;
 
@@ -89,6 +90,7 @@ class Car
     void Sample_Time(void);
     void System_Identification(void);
     void Read_Sensors_And_Obtain_Errors(void);
+    void Controller(void);
 
     // Constructor
     Car();
@@ -139,9 +141,9 @@ void loop(){
   
   // --- TESTING: Uncomment any of these below if you want to see specific outputs to the serial port --- //
   tester.SystemId();
-  // tester.Print_Total_Error();
-  // tester.Print_Sensor_Values();
+  //tester.Print_Total_Error();
   // tester.Print_Line_Values();
+  // tester.Print_Sensor_Values();
   
   // tester.Display_Timer();   // Displays Timer
 }

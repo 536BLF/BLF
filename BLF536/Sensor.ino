@@ -60,7 +60,7 @@ void Sensor::Init_Sensors(void) {
  */
 void Sensor::Calibrate(void) {
   int i = 0;
-  int sensorVal = 0;
+  double sensorVal = 0;
 
   // Arduino LED ON during calibration
   digitalWrite(PIN_LED_ARDUINO, HIGH);        
@@ -103,6 +103,8 @@ void Sensor::Read_All_Sensors(void) {
   this->Array_Copy(); 
                                     
   for (i = 0 ; i < NUM_SENSORS ; i++) {
+    
+    this->tmp = 0;
 
     // Cycling through the mux
     this->Mux_Select(i);                                            
@@ -149,11 +151,15 @@ void Sensor::Array_Copy(void) {
  */
 int Sensor::Read_Average(void) {
   int i;
-  int total = 0;
+  double total = 0;
+  double holdVal = 0;
 
   for (i = 0 ; i < NUM_SAMPLES ; i++) {
+
+    holdVal = (double)analogRead(this->pin);
+    
     // Total value from all the samples
-    total += analogRead(this->pin);    
+    total += holdVal;
   }
 
   // Returning the average value of the sensor values
@@ -174,19 +180,30 @@ int Sensor::Read_Average(void) {
  * 
  */
 void Sensor::Get_Line_Value(void) {
-  int i;
-  unsigned long total = 0;
-  unsigned long sum = 0;
-  unsigned long out = 0;
+  int i = 0;
+  double j = 0;
+  double total = 0;
+  double sum = 0;
+  double out = 0;
+  double tmp = 0;
 
   for (i = 0 ; i < NUM_SENSORS ; i++) {
 
+    tmp = this->sensorVals_T0[i];
+
     // Numerator of Equation
-    total += this->sensorVals_T0[i] * (i * MULTIPLIER);  
+    total += tmp * (j * MULTIPLIER);  
+    j++;
 
     // Denominator of Equation
-    sum += this->sensorVals_T0[i];                        
+    sum += tmp;                        
   }
+
+  if(sum == 0){
+    sum = 1;
+  }
+
+  
 
   // Dividing numerator by denominator
   out = total / sum;                          
@@ -206,7 +223,7 @@ void Sensor::Sensor_Error_Calc(void) {
 
   // Get the error from the center of the sensor in CENTIMETERS
   // Equation: Error = ( Current Line Value - Initialized Line Value ) / 1000
-  this->error = ((float)this->lineVal - (float)this->initLineVal) / (float)1000;   
+  this->error = (double)((double)this->lineVal - (double)this->initLineVal) / (double)1000;   
 }
 
 
