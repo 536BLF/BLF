@@ -43,6 +43,10 @@
 #define PID_VAL_E             (-0.07179L)
 #define PID_VAL_F             (0.03089L)
 
+#define SISO_LAG_A            (25.52)
+#define SISO_LAG_B            (-10.21)
+#define SISO_LAG_C            (-0.043)
+
 
 // --- EVERYTHING BELOW THIS IS UNFINISHED --- //
 

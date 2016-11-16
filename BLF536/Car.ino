@@ -129,7 +129,7 @@ void Car::System_Identification(void){
 
   // If we have not began the impulse - create the impulse by changing the initialized line value
   if(!this->signalBegin){
-    this->setPoint = 1;
+    this->setPoint = 0;
 
     // Create this impulse once
     this->signalEnd = true;
@@ -150,9 +150,12 @@ void Car::Controller(){
   this->motorDiffPWM = KPROP * this->totalError; 
   */
 
+  /* PID VALS 1.0 - SS: 160, K: 23
   this->motorDiffPWM = (PID_VAL_A * this->totalError + PID_VAL_B * this->totalErrorHold[0] + PID_VAL_C * this->totalErrorHold[1] 
                       - PID_VAL_E * this->motorDiffPWMHold[0] - PID_VAL_F * this->motorDiffPWMHold[1]) / PID_VAL_D;
-  
+  */
+
+  this->motorDiffPWM = SISO_LAG_A * this->totalError + SISO_LAG_B * this->totalErrorHold[0] - SISO_LAG_C * this->motorDiffPWMHold[0];
 }
 
 
