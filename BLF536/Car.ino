@@ -15,7 +15,9 @@ Car::Car(){
  */
 void Car::MotorDiff(){
   double rightSpeed;
+  int left;
   double leftSpeed;
+  int right;
  
   //assume diffvalue < 0 as right turn and >0 is a LEFT turn
   if(this->motorDiffPWM > (MAX_SPEED_VAL - this->pwmSetSpeed)){
@@ -24,6 +26,9 @@ void Car::MotorDiff(){
   else if (this->motorDiffPWM < (this->pwmSetSpeed - MAX_SPEED_VAL)){
     this->motorDiffPWM = (this->pwmSetSpeed - MAX_SPEED_VAL);
     }
+
+  Push_Onto_Array(this->totalErrorHold, this->totalError, HOLD_AMOUNT);
+  Push_Onto_Array(this->motorDiffPWMHold, this->motorDiffPWM, HOLD_AMOUNT);
     
   leftSpeed = this->pwmSetSpeed + (this->motorDiffPWM);
   rightSpeed = this->pwmSetSpeed - (this->motorDiffPWM);
@@ -33,53 +38,19 @@ void Car::MotorDiff(){
   if(leftSpeed  < 0)  { leftSpeed   = 0; }
   if(rightSpeed < 0)  { rightSpeed  = 0; }
 
-  //Serial.print("\t,LEFT:\t"); Serial.print(leftSpeed);
-  //Serial.print("\t,RIGHT:\t"); Serial.print(rightSpeed);
-  //Serial.print("\t");
+  left = (int)leftSpeed;
+  right = (int)rightSpeed;
 
-  this->MotorRightPtr->setSpeed(rightSpeed);
-  this->MotorLeftPtr->setSpeed(leftSpeed);
-  this->MotorRightPtr->run(FORWARD);
-  this->MotorLeftPtr->run(FORWARD);
- 
-}
+  // Serial.print("\t,LEFT:\t"); Serial.print(left);
+  // Serial.print("\t,RIGHT:\t"); Serial.print(right);
+  // Serial.print("\t");
 
-
-/*
- * Function: Total_Error_Calc
- * Author: Alper Ender
- * Description: Obtains the total error calculation depending on which sensors are sensing the line
- */
-void Car::Total_Error_Calc(int select){
+  MotorRightPtr->setSpeed(right);
+  MotorLeftPtr->setSpeed(left);
+  MotorRightPtr->run(FORWARD);
+  MotorLeftPtr->run(FORWARD);
   
-  switch(select){
-    
-    // When the line for the left sensor has dissappeared - use the left sensor error
-    case 0:         
-      this->totalError = leftSensor.error; 
-      break;      
 
-    // When the line for the right sensor has dissappeared - use the right sensor error
-    case 1:
-      this->totalError = rightSensor.error;    
-      break;      
-
-    // When sensing both sensors over the line - average the errors
-    case 2:
-      /*
-      if(rightSensor.error > 5 && leftSensor.error > 5){
-        rightSensor.error = 0;
-        leftSensor.error = 0;
-      } else if(rightSensor.error > 5){
-        rightSensor.error = leftSensor.error;
-      } else if(leftSensor.error > 5){
-        leftSensor.error = rightSensor.error;
-      }
-      */
-      this->totalError = (leftSensor.error + rightSensor.error) / (float)2;
-      break;   
-  }
-  if(this->totalError > 5) this->totalError = 0;
 }
 
 
@@ -103,7 +74,6 @@ void Car::Sample_Time(void){
   // Updates the timer to the next sample time
   this->timer = this->timer + SAMPLING_TIME;
   
-  
 }
 
 
@@ -120,11 +90,15 @@ void Car::Read_Sensors_And_Obtain_Errors(void){
   rightSensor.Read_All_Sensors();
 
   // Calculating the line errors for each sensor
-  leftSensor.Sensor_Error_Calc();
-  rightSensor.Sensor_Error_Calc();
+  leftSensor.Sensor_Calc();
+  rightSensor.Sensor_Calc();
 
-  // Calculating the total error for 2 lines
-  this->Total_Error_Calc(2);
+  // Calculating the position of the vehicle in respect to the set point
+  this->pos = (leftSensor.sensedVal + rightSensor.sensedVal) / 2;
+
+  // Calculating the total error for the vehicle
+  this->totalError = this->pos - this->setPoint;
+  
 }
 
 
@@ -151,29 +125,50 @@ void Car::System_Identification(void){
   if(this->beginTime > millis()) return;
 
   // Return if we have already completed the impulse
-  if(this->impulseEnd) return;
+  if(this->signalEnd) return;
 
   // If we have not began the impulse - create the impulse by changing the initialized line value
-  if(!this->impulseBegin){
-    rightSensor.initLineVal = rightSensor.initLineVal + IMPULSE_VALUE;
-    leftSensor.initLineVal = leftSensor.initLineVal + IMPULSE_VALUE;
-    this->impulseBegin = true;
-  /*
-  // End the impulse
-  // In the next time sample after we began our impulse, we will be here to bring the initialized value back to 0, completing the impulse
-  } else {
-    rightSensor.initLineVal = rightSensor.initLineVal + IMPULSE_VALUE;
-    leftSensor.initLineVal = leftSensor.initLineVal + IMPULSE_VALUE;
-  */
+  if(!this->signalBegin){
+    this->setPoint = 1;
+
     // Create this impulse once
-    this->impulseEnd = true;
+    this->signalEnd = true;
+    this->signalBegin = true;
   }
   
 }
 
 
+/*
+ * Function: Controller
+ * Author: Alper Ender
+ * Description: Multiplies the error with the Kprop
+ */
 void Car::Controller(){
+  /*
   // Proportional controller, error times a constant = motor differential
   this->motorDiffPWM = KPROP * this->totalError; 
+  */
+
+  this->motorDiffPWM = (PID_VAL_A * this->totalError + PID_VAL_B * this->totalErrorHold[0] + PID_VAL_C * this->totalErrorHold[1] 
+                      - PID_VAL_E * this->motorDiffPWMHold[0] - PID_VAL_F * this->motorDiffPWMHold[1]) / PID_VAL_D;
+  
+}
+
+
+/*
+ * Function: Push_Onto_Array
+ * Author: Alper Ender
+ * Description: Pushes a value onto the top of an array
+ */
+void Push_Onto_Array(double input[], double pushVal, int arraySize){
+  int i;
+  
+  for(i=arraySize - 2 ; i >= 0 ; i--){
+    input[i+1] = input[i];
+  }
+  
+  input[0] = pushVal;
+  
 }
 

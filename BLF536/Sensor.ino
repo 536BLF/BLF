@@ -110,7 +110,7 @@ void Sensor::Read_All_Sensors(void) {
     this->Mux_Select(i);                                            
 
     // Obtaining an average of the readings
-    this->tmp = this->Read_Average();     
+    this->tmp = analogRead(this->pin);
 
     // Obtaining the sensor values between the calibrated min and max and mapping them between 0 - 1023
     this->tmp = map(this->tmp, this->sensorMin, this->sensorMax, MIN_SENSOR_VAL, MAX_SENSOR_VAL);   
@@ -216,14 +216,14 @@ void Sensor::Get_Line_Value(void) {
  * Author: Alper Ender
  * Description: Obtain the error calculation for the array on the line
  */
-void Sensor::Sensor_Error_Calc(void) {
+void Sensor::Sensor_Calc(void) {
 
   // Get the line value between 0 - 7000
   Get_Line_Value();  
 
-  // Get the error from the center of the sensor in CENTIMETERS
-  // Equation: Error = ( Current Line Value - Initialized Line Value ) / 1000
-  this->error = (double)((double)this->lineVal - (double)this->initLineVal) / (double)1000;   
+  // Get the sensed value from the center of the sensor in CENTIMETERS
+  // Equation: Sensed Value = ( Current Line Value - Initialized Line Value ) / 1000
+  this->sensedVal = (double)(this->lineVal - this->initLineVal) / (double)1000;   
 }
 
 

@@ -51,11 +51,11 @@ void Tester::Print_Line_Values(void){
 void Tester::Print_Total_Error(void){
   Serial.print("LeftINIT:\t"); Serial.print(leftSensor.initLineVal); Serial.print("\t");
   Serial.print("RightINIT:\t"); Serial.print(rightSensor.initLineVal); Serial.print("\t");
-  leftSensor.Sensor_Error_Calc();
+  leftSensor.Sensor_Calc();
   Serial.print("Left:\t"); Serial.print(leftSensor.error); Serial.print("\t");
-  rightSensor.Sensor_Error_Calc();
+  rightSensor.Sensor_Calc();
   Serial.print("Right:\t"); Serial.print(rightSensor.error); Serial.print("\t");
-  BLF536.Total_Error_Calc(2);
+  BLF536.Total_Error_Calc();
   Serial.print("Total:\t"); Serial.println(BLF536.totalError);
 }
 
@@ -90,7 +90,7 @@ void Tester::SystemId(void){
     Serial.print(this->sample);
     */
     //Serial.print("\t,OUTPUT:\t");
-    Serial.println(BLF536.totalError + 1);
+    Serial.println(BLF536.pos);
     //Serial.println(",");
     this->sample++;
   }

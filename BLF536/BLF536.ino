@@ -21,12 +21,13 @@ class Sensor{
     double        error;                        // Error value for the sensor - between -3.5 and 3.5 CENTIMETERS
     double        lineVal;                      // The line value calculated from the current sensor values - between 0 and 7000
     double        initLineVal;                  // Initialized line value based on where the car begins
+    double        sensedVal;
     
     // Functions
     void Init_Sensors();
     void Read_All_Sensors(void);
     void Get_Line_Value(void);
-    void Sensor_Error_Calc(void);
+    void Sensor_Calc(void);
     void Calibrate(void);
     void Mux_Select(int);
     void Array_Copy(void);
@@ -71,26 +72,30 @@ class Car
   public:
 
     // Variables
-    boolean       impulseBegin      = false;      // Whether or not we have began the impulse for the system identification
-    boolean       impulseEnd        = false;      // Whether or not we have completed the impulse for the system identification
-    unsigned long deltaTime;                      // How long to hold the impulse for the system identification
-    unsigned long beginTime         = 0;          // When to begin the impulse for the system identification
-    unsigned long timer             = 0;          // Timer to ensure that the each loop runs T second intervals
-    double        totalError_T1;
-    double        totalError;                     // The total error of the vehicle from its calibrated location
-    double        pwmSetSpeed       = SETSPEED;   // Setting the PWM speed
-    double        motorDiffPWM;                   // The motor differential PWM
+    boolean       signalEnd         = false;        // Whether or not we have began the impulse for the system identification
+    boolean       signalBegin       = false;        // Whether or not we have completed the impulse for the system identification
+    unsigned long deltaTime;                        // How long to hold the impulse for the system identification
+    unsigned long beginTime         = 0;            // When to begin the impulse for the system identification
+    unsigned long timer             = 0;            // Timer to ensure that the each loop runs T second intervals 
+    double        setPoint; 
+    double        pwmSetSpeed       = SETSPEED;     // Setting the PWM speed   
+    double        pos;                              // The position of the vehicle in reference to the set point
+    double        totalError;                       // The total error of the vehicle from its set point
+    double        totalErrorHold[HOLD_AMOUNT];
+    double        motorDiffPWM;                     // The motor differential PWM
+    double        motorDiffPWMHold[HOLD_AMOUNT];
     AF_DCMotor    *MotorRightPtr;
     AF_DCMotor    *MotorLeftPtr;
 
     // Functions
     void MotorDiff(void);
     void sysId(void);
-    void Total_Error_Calc(int);
+    void Total_Error_Calc(void);
     void Sample_Time(void);
     void System_Identification(void);
     void Read_Sensors_And_Obtain_Errors(void);
     void Controller(void);
+    void Filter(void);
 
     // Constructor
     Car();
@@ -103,7 +108,7 @@ AF_DCMotor MotorRight(3);
 
 
 void setup(){
-  Serial.begin(9600);
+  Serial.begin(115200);
 
   // --- INIT MOTORS --- //
   BLF536.MotorRightPtr=&MotorRight;
@@ -141,7 +146,7 @@ void loop(){
   
   // --- TESTING: Uncomment any of these below if you want to see specific outputs to the serial port --- //
   tester.SystemId();
-  //tester.Print_Total_Error();
+  // tester.Print_Total_Error();
   // tester.Print_Line_Values();
   // tester.Print_Sensor_Values();
   

@@ -25,27 +25,27 @@
 
 #define SAMPLING_TIME         (25)      // Sampling time (T) in MILLISECONDS
 
-#define BEGIN_TIME            (1000UL)            // Time to begin system impulse for system identification and to begin recording
+#define HOLD_AMOUNT           (4)       // Number of past calculations we are holding onto
+
+#define BEGIN_TIME            (0UL)               // Time to begin system impulse for system identification and to begin recording
 #define DELTA_TIME            (BEGIN_TIME + 5);   // Complete the impulse for the system identification one T later
-#define IMPULSE_VALUE         (1000L)             //  The error to create for the system identification IN MILLIMETERS
+#define IMPULSE_VALUE         (1000L)             // The error to create for the system identification IN MILLIMETERS
 #define MAX_NUM_SAMPLES       (500)               // Number of samples to record
 
+#define SETSPEED              (160)      // Arbitrary - found through experemental values
+#define MAX_SPEED_VAL         (255L)     // Max input into the motors
+#define KPROP                 (23L)      //  Proportional controller constant
 
-// --- EVERYTHING BELOW THIS NEEDS TO BE UPDATED WITH COMMENTS --- //
+#define PID_VAL_A             (3.7832L)
+#define PID_VAL_B             (-7.325L)
+#define PID_VAL_C             (3.543L)
+#define PID_VAL_D             (0.04089L)
+#define PID_VAL_E             (-0.07179L)
+#define PID_VAL_F             (0.03089L)
 
 
-#define SETSPEED              (125L)               //arbitrary
-#define MAX_SPEED_VAL         (255L)
-#define ZEROREFTIME           (1000)              //Delay before unit step kicks in
-#define KPROP                 (6L)              //Proportional controller constant
-#define DIRECTIONPIN1         (7)
-#define DIRECTIONPIN2         (10)
+// --- EVERYTHING BELOW THIS IS UNFINISHED --- //
 
-// Motor input1 and input2 they should be PWM signals
-#define SPEEDPIN1             (3)
-#define SPEEDPIN2             (14)
-#define MOTOR DELAY           (500)
-// Motor output1 and 2   those pins are decided by pin configuration in Datasheet
 
 #define STRAIGHTTIME 1000
 #define RIGHTTURNTIME 1000
