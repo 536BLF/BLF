@@ -7,13 +7,13 @@
 
 #define PIN_LED_ARDUINO       (13)      // Arduino LED pin 13 for digital output
 
-#define MULTIPLIER            (1000L)  // General 1000 multiplier - used for various conversions
+#define MULTIPLIER            (1000L)   // General 1000 multiplier - used for various conversions
 
 #define MIN_SENSOR_VAL        (0L)       // Min sensor value = 0
 #define MAX_SENSOR_VAL        (1023L)    // Max sensor value = 1023
 
 #define NUM_SAMPLES           (1L)       // Number of samples to average
-#define CALIBRATION_AMOUNT    (8000L)  // Calibration limit
+#define CALIBRATION_AMOUNT    (8000L)    // Calibration limit
 
 #define BLACK_LINE            (0)       // Black or white line selection
 #define WHITE_LINE            (1)
@@ -25,32 +25,21 @@
 
 #define SAMPLING_TIME         (25)      // Sampling time (T) in MILLISECONDS
 
-#define HOLD_AMOUNT           (4)       // Number of past calculations we are holding onto
+#define HOLD_AMOUNT           (5)       // Number of past calculations we are holding onto
 
 #define BEGIN_TIME            (0UL)               // Time to begin system impulse for system identification and to begin recording
 #define DELTA_TIME            (BEGIN_TIME + 5);   // Complete the impulse for the system identification one T later
 #define IMPULSE_VALUE         (1000L)             // The error to create for the system identification IN MILLIMETERS
 #define MAX_NUM_SAMPLES       (500)               // Number of samples to record
 
-#define SETSPEED              (160)      // Arbitrary - found through experemental values
+#define SETSPEED              (160L)      // Arbitrary - found through experemental values
+// #define KPROP                 (10L)      // Proportional controller constant
 #define MAX_SPEED_VAL         (255L)     // Max input into the motors
-#define KPROP                 (23L)      //  Proportional controller constant
-
-#define PID_VAL_A             (3.7832L)
-#define PID_VAL_B             (-7.325L)
-#define PID_VAL_C             (3.543L)
-#define PID_VAL_D             (0.04089L)
-#define PID_VAL_E             (-0.07179L)
-#define PID_VAL_F             (0.03089L)
-
-#define SISO_LAG_A            (25.52)
-#define SISO_LAG_B            (-10.21)
-#define SISO_LAG_C            (-0.043)
 
 
 // --- EVERYTHING BELOW THIS IS UNFINISHED --- //
 
 
-#define STRAIGHTTIME 1000
-#define RIGHTTURNTIME 1000
-#define LEFTTURNTIME 1000
+#define STRAIGHTTIME          (1000)
+#define RIGHTTURNTIME         (1000)
+#define LEFTTURNTIME          (1000)

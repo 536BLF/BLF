@@ -1,7 +1,7 @@
 /*
  * Function: Tester
  * Author: Alper Ender
- * Description: Constructor of the Tester class - This function does not do anything
+ * Description: Constructor of the Tester class
  */
 Tester::Tester(){
   
@@ -82,17 +82,9 @@ void Tester::Display_Timer(void){
 /*
  * Function: SystemId
  * Author: Alper Ender
- * Description: Prints the sample number and the total error for the system identification in a CSV format
+ * Description: Prints the position of the vehicle from a range of -3.5 cm to 3.5 cm
  */
 void Tester::SystemId(void){
-  if(/*this->sample < MAX_NUM_SAMPLES && */BLF536.beginTime < millis()){
-    /*
-    Serial.print(this->sample);
-    */
-    //Serial.print("\t,OUTPUT:\t");
-    Serial.println(BLF536.pos);
-    //Serial.println(",");
-    this->sample++;
-  }
+  Serial.println(BLF536.pos);
 }
 

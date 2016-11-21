@@ -10,18 +10,18 @@ class Sensor{
   public:
   
     // Variables
-    int           whiteLine;                    // Whether we are reading a black or white line
-    uint8_t       pin;                          // Analog input pin select for the sensor
-    double        sensorVals_T0[NUM_SENSORS];   // Sensor values for T = 0
-    double        sensorVals_T1[NUM_SENSORS];   // Sensor valeus for T = -1 (Sensor values from one time interval before
-    double        sensorVals_T2[NUM_SENSORS];   // Sensor valeus for T = -2 (Sensor values from two time intervals before
-    double        sensorMin;                    // Minimum sensor value
-    double        sensorMax;                    // Maximum sensor value
-    double        tmp;                          // Temporary value for sensor readings
-    double        error;                        // Error value for the sensor - between -3.5 and 3.5 CENTIMETERS
-    double        lineVal;                      // The line value calculated from the current sensor values - between 0 and 7000
-    double        initLineVal;                  // Initialized line value based on where the car begins
-    double        sensedVal;
+    int       whiteLine;                    // Whether we are reading a black or white line
+    uint8_t   pin;                          // Analog input pin select for the sensor
+    double    sensorVals_T0[NUM_SENSORS];   // Sensor values for T = 0
+    double    sensorVals_T1[NUM_SENSORS];   // Sensor valeus for T = -1 (Sensor values from one time interval before
+    double    sensorVals_T2[NUM_SENSORS];   // Sensor valeus for T = -2 (Sensor values from two time intervals before
+    double    sensorMin;                    // Minimum sensor value
+    double    sensorMax;                    // Maximum sensor value
+    double    tmp;                          // Temporary value for sensor readings
+    double    error;                        // Error value for the sensor - between -3.5 and 3.5 CENTIMETERS
+    double    lineVal;                      // The line value calculated from the current sensor values - between 0 and 7000
+    double    initLineVal;                  // Initialized line value based on where the car begins
+    double    sensedVal;
     
     // Functions
     void Init_Sensors();
@@ -49,7 +49,6 @@ class Tester{
   
     // Variables
     unsigned long timerVal;     // Timer value for testing the time it takes to complete a specific task
-    unsigned long sample = 0;   // Sample counter for system identification
     
     // Functions
     void Print_Sensor_Values(void);
@@ -72,18 +71,14 @@ class Car
   public:
 
     // Variables
-    boolean       signalEnd         = false;        // Whether or not we have began the impulse for the system identification
-    boolean       signalBegin       = false;        // Whether or not we have completed the impulse for the system identification
-    unsigned long deltaTime;                        // How long to hold the impulse for the system identification
-    unsigned long beginTime         = 0;            // When to begin the impulse for the system identification
     unsigned long timer             = 0;            // Timer to ensure that the each loop runs T second intervals 
-    double        setPoint; 
+    double        setPoint          = 1;            // Set point for system identification: 1 for system identification, 0 for regular control
     double        pwmSetSpeed       = SETSPEED;     // Setting the PWM speed   
     double        pos;                              // The position of the vehicle in reference to the set point
     double        totalError;                       // The total error of the vehicle from its set point
-    double        totalErrorHold[HOLD_AMOUNT];
+    double        totalErrorHold[HOLD_AMOUNT];      // Holding the total error amounts
     double        motorDiffPWM;                     // The motor differential PWM
-    double        motorDiffPWMHold[HOLD_AMOUNT];
+    double        motorDiffPWMHold[HOLD_AMOUNT];    // Holding the motor differential ammounts
     AF_DCMotor    *MotorRightPtr;
     AF_DCMotor    *MotorLeftPtr;
 
@@ -92,7 +87,6 @@ class Car
     void sysId(void);
     void Total_Error_Calc(void);
     void Sample_Time(void);
-    void System_Identification(void);
     void Read_Sensors_And_Obtain_Errors(void);
     void Controller(void);
     void Filter(void);
@@ -119,20 +113,16 @@ void setup(){
   rightSensor.Init_Sensors();
 
   // --- INIT COMPUTER --- //
-  BLF536.System_Identification();
   BLF536.Sample_Time();
 }
 
 
 void loop(){
   // tester.Start_Timer();    // Timer Begin
-
+  
 
   // --- HOLDS HERE TO GET EXACTLY THE T SECOND INTERVAL --- //
   BLF536.Sample_Time();
-
-  // --- COMPUTER --- //
-  BLF536.System_Identification();
 
   // --- SENSORS --- //
   BLF536.Read_Sensors_And_Obtain_Errors();
