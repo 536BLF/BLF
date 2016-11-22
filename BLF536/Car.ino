@@ -52,16 +52,35 @@ void Car::Read_Sensors_And_Obtain_Errors(void){
     leftSensor.Hold_Value();
   }
   */
-
+  
   // Calculating the line errors for each sensor
   leftSensor.Sensor_Calc();
   rightSensor.Sensor_Calc();
-
+  
+  if(abs(rightSensor.sensedVal - rightSensor.sensedValHold) > 4){
+    rightSensor.sensedVal = rightSensor.sensedValHold;
+  }
+  rightSensor.sensedValHold = rightSensor.sensedVal;
+  
+  /*
   // Calculating the position of the vehicle in respect to the set point
   this->pos = (leftSensor.sensedVal + rightSensor.sensedVal) / 2;
+  */
+  
+  // READING ONLY RIGHT SENSOR
+  this->pos = rightSensor.sensedVal;
 
   // Calculating the total error for the vehicle
   this->totalError = this->pos - this->setPoint;
+
+  /*
+  #define DEADBAND_VAL (0.1)
+
+  if(abs(this->totalErrorHold[0] - this->totalError) < DEADBAND_VAL){
+    this->totalError = this->totalErrorHold[0];
+  }
+  */
+
 }
 
 
@@ -86,12 +105,14 @@ void Car::Read_Sensors_And_Obtain_Errors(void){
  * 
  */
 void Car::Controller(){
+  
   /*
- 
   // Proportional controller, error times a constant = motor differential
   
   this->motorDiffPWM = KPROP * this->totalError; 
   
+
+  // TAKE A LOOK AT THIS ONE - COMPUTER POWER, SS: 160, KPROP: 100
   */
 
 
@@ -99,10 +120,12 @@ void Car::Controller(){
   // ------ PID CONTROLLERS -------
   // ALL PID CONTROLLERS HAVE BEEN TESTED
 
+  
   // INITIAL CONTROLLER
-  // PID  Controller - SS: 160, K: 23
-  // Results: STABLE - Postive responses with a little bit of overshoot
- 
+  // PID  Controller - SS: 160
+  // System ID Results: Stable
+  // Curvy Track Results: Not good - Not aggressive enough for the turns
+  
   #define PID_VAL_A             (3.7832L)
   #define PID_VAL_B             (-7.325L)
   #define PID_VAL_C             (3.543L)
@@ -113,10 +136,30 @@ void Car::Controller(){
   this->motorDiffPWM = (PID_VAL_A * this->totalError + PID_VAL_B * this->totalErrorHold[0]   + PID_VAL_C * this->totalErrorHold[1] 
                                                      - PID_VAL_E * this->motorDiffPWMHold[0] - PID_VAL_F * this->motorDiffPWMHold[1]) / PID_VAL_D;
   */
+
+  /*
+  // PID  Controller - SS: 80
+  // System ID Results: Stable at 160 SS
+  // Curvy Track Results: Not good - not aggressive enough for the turns
+  
+  //    15.62 z^2 - 30.34 z + 14.73
+  //  ----------------------------
+  //  0.154 z^2 - 0.2981 z + 0.144
+
+  #define PID_VAL_A             (15.62L)
+  #define PID_VAL_B             (-30.34L)
+  #define PID_VAL_C             (14.73L)
+  #define PID_VAL_D             (0.154L)
+  #define PID_VAL_E             (-0.2981L)
+  #define PID_VAL_F             (0.144L)
+
+  this->motorDiffPWM = (PID_VAL_A * this->totalError + PID_VAL_B * this->totalErrorHold[0]   + PID_VAL_C * this->totalErrorHold[1] 
+                                                     - PID_VAL_E * this->motorDiffPWMHold[0] - PID_VAL_F * this->motorDiffPWMHold[1]) / PID_VAL_D;
+  */
   
   /*
-  // PID  Controller - SS: 160, K: 23
-  // Results: Unstable - Does not follow the line
+  // PID  Controller - SS: 160
+  // System ID Results: Unstable - Very Oscillatory.
 
   //       6.744 z^2 - 13.06 z + 6.321
   //  ----------------------------------
@@ -131,11 +174,12 @@ void Car::Controller(){
  
   this->motorDiffPWM = (PID_VAL_A * this->totalError + PID_VAL_B * this->totalErrorHold[0]   + PID_VAL_C * this->totalErrorHold[1] 
                                                      - PID_VAL_E * this->motorDiffPWMHold[0] - PID_VAL_F * this->motorDiffPWMHold[1]) / PID_VAL_D;
-  */  
+  */
 
   /*
-  // PID  Controller - SS: 140, K: 15
-  // Results: Stable - But still oscillatory
+  // PID  Controller - SS: 140
+  // System ID Results: Stable - with a gain of 0.96 . Might do well with curves
+  // Curvy Track Results: Moderate - Needs to be more aggressive with curves
 
   //       2.127 z^2 - 3.957 z + 1.841
   //  ----------------------------------
@@ -150,11 +194,12 @@ void Car::Controller(){
  
   this->motorDiffPWM = (PID_VAL_A * this->totalError + PID_VAL_B * this->totalErrorHold[0]   + PID_VAL_C * this->totalErrorHold[1] 
                                                      - PID_VAL_E * this->motorDiffPWMHold[0] - PID_VAL_F * this->motorDiffPWMHold[1]) / PID_VAL_D;
+  this->motorDiffPWM = this->motorDiffPWM * 0.96L;
   */
 
   /*
-  // PID  Controller - SS: 120, K: 10
-  // Results: Unstable - Wheels change speed too fast and the vehicle goes off course
+  // PID  Controller - SS: 120
+  // System ID Results: Unstable - Right Wheel Doesn't Move
 
   //       -33.96 z^2 + 62.84 z - 29.06
   //  ----------------------------------
@@ -172,8 +217,8 @@ void Car::Controller(){
   */
 
   /*
-  // PID  Controller - SS: 100, K: 7
-  // Results: Unstable - changes wheels too fast - does not follow the line
+  // PID  Controller - SS: 100
+  // System ID Results: Unstable - changes wheels too fast - Only one wheel moves at a time.
 
   //       35.67 z^2 - 69.63 z + 33.98
   //  ----------------------------------
@@ -188,12 +233,12 @@ void Car::Controller(){
  
   this->motorDiffPWM = (PID_VAL_A * this->totalError + PID_VAL_B * this->totalErrorHold[0]   + PID_VAL_C * this->totalErrorHold[1] 
                                                      - PID_VAL_E * this->motorDiffPWMHold[0] - PID_VAL_F * this->motorDiffPWMHold[1]) / PID_VAL_D;
+  this->motorDiffPWM = this->motorDiffPWM * 0.8L;
   */
-
 
   /*
   // Alper PID TEST
-  // Results: Unstable - Does not follow the line
+  // System ID Results: Unstable - Does not follow the line
 
   //   434.9 z^2 - 849.9 z + 415.2
   //  ---------------------------
@@ -215,23 +260,27 @@ void Car::Controller(){
   */
   
   
+  
   /*
   // ------ SISO LAG/LEAD CONTROLLERS -------
   // ALL LEAD LAG CONTROLLERS HAVE BEEN TESTED
 
-  // SISO Lead/Lag Controller - SS: 160, K:23
-  // Results: Unstable - oscillates too much
+  // SISO Lead/Lag Controller - SS: 160
+  // System ID Results: Stable - High Settling Time
+  //                 - Faster settling time with a gain of 2 but choppier
 
   #define A            (25.52L)
   #define B            (-10.21L)
   #define C            (-0.043L)
 
   this->motorDiffPWM = A * this->totalError + B * this->totalErrorHold[0] - C * this->motorDiffPWMHold[0];
+  // this->motorDiffPWM = this->motorDiffPWM * 2L;
   */
 
   /*
-  // SISO Lead/Lag Controller - SS: 160, K:23
-  // Results: Unstable - Does not follow the line at all
+  // SISO Lead/Lag Controller - SS: 160
+  // System ID Results: Stable - when the controller has an extra gain (K) of 10
+  // Curvy Track Results: Moderate - Is alright when gain is 20 - not aggressive enough
 
   // (1.826 z - 0.1771)/(z-0.03)
 
@@ -240,11 +289,13 @@ void Car::Controller(){
   #define C            (-0.03L)
 
   this->motorDiffPWM = A * this->totalError + B * this->totalErrorHold[0] - C * this->motorDiffPWMHold[0];
+  this->motorDiffPWM = this->motorDiffPWM * 20L;
   */
 
   /*
-  // SISO Lead/Lag Controller - SS: 160, K:23
-  // Results: Unstable - Does not follow the line at all
+  // SISO Lead/Lag Controller - SS: 160
+  // System ID Results: Stable - With a gain (k) of 10. Better with a gain of 20. A gain of 30 would help with curves
+  // Curvy Track Results: Moderate - with a gain of 30. Needs to be more aggressive
 
   // (0.9839z-0.09741)/(z-0.015)
 
@@ -253,11 +304,12 @@ void Car::Controller(){
   #define C            (-0.015L)
 
   this->motorDiffPWM = A * this->totalError + B * this->totalErrorHold[0] - C * this->motorDiffPWMHold[0];
+  this->motorDiffPWM = this->motorDiffPWM * 30L;
   */
 
   /*
-  // SISO Lead/Lag Controller - SS: 160, K:23
-  // Results: Unstable - Oscillates way too much
+  // SISO Lead/Lag Controller - SS: 160
+  // System ID Results: Stable - A little bit of oscillation but not too bad
 
   // (80.73z-0.7992)/(z-0.0009048)
 
@@ -269,8 +321,8 @@ void Car::Controller(){
   */
 
   /*
-  // SISO Lead/Lag Controller - SS: 160, K:23
-  // Results: Unstable - Oscillates way too much. Wheels either are the same or extremely fast
+  // SISO Lead/Lag Controller - SS: 160
+  // System ID Results: Stable - Very nice
 
   // (139.3z-39.86)/(z-0.07)
 
@@ -281,9 +333,10 @@ void Car::Controller(){
   this->motorDiffPWM = A * this->totalError + B * this->totalErrorHold[0] - C * this->motorDiffPWMHold[0];  
   */
 
-  /*
-  // SISO Lead/Lag Controller - SS: 140, K:15
-  // Results: STABLE - One of the best controllers so far
+  
+  // SISO Lead/Lag Controller - SS: 140
+  // System ID Results: STABLE - Nice and slow. Even better with a gain of 5
+  // Curvy Track Results: BEAUTIFUL - just a tad choppy 
 
   // (272.9z-259.2)/(z-0.07)
 
@@ -292,11 +345,12 @@ void Car::Controller(){
   #define C            (-0.07L)
 
   this->motorDiffPWM = A * this->totalError + B * this->totalErrorHold[0] - C * this->motorDiffPWMHold[0];  
-  */
+  this->motorDiffPWM = this->motorDiffPWM * 5L;
+  
 
   /*
-  // SISO Lead/Lag Controller - SS: 100, K:7
-  // Results: Stable but oscillatory - almost marginally unstable
+  // SISO Lead/Lag Controller - SS: 100
+  // System ID Results: Stable but jerky
 
   // (1000z-950)/(z-0.95)
 
@@ -308,8 +362,9 @@ void Car::Controller(){
   */
 
   /*
-  // SISO Lead/Lag Controller - SS: 100, K:7
-  // Results: Stable - A little Jerky
+  // SISO Lead/Lag Controller - SS: 100
+  // System ID Results: Stable - Good with a gain of 2. A gain of 3 would help with corners.
+  // Curvy Track Results: Awesome! - Just a tad choppy
 
   // (1239z-1199)/(z-0.009)
 
@@ -318,15 +373,17 @@ void Car::Controller(){
   #define C            (-0.009L)
 
   this->motorDiffPWM = A * this->totalError + B * this->totalErrorHold[0] - C * this->motorDiffPWMHold[0];  
+  this->motorDiffPWM = this->motorDiffPWM * 3L;
   */
+
   
 
   /*
   // ------ ROOT LOCUS CONTROLLERS -------
   // ALL ROOT LOCUS CONTROLLERS HAVE BEEN TESTED
 
-  // Root Locus Controller - SS: 160, K:23
-  // Results: Unstable - Does not follow the line
+  // Root Locus Controller - SS: 160
+  // System ID Results: Unstable - High rise and settling time
 
   //  29.5 z^2 - 59.59 z + 30.12
   //  --------------------------
@@ -342,8 +399,9 @@ void Car::Controller(){
   */
 
   /*
-  // Root Locus Controller - SS: 160, K:23 part 2
-  // Results: Unstable - Does not follow the line
+  // Root Locus Controller - SS: 160
+  // System ID Results: M.Stable - Oscillatory. Could help with corners
+  // Curvy Track Results: Moderate - not high enough of a response time
 
   //  4190 z^2 - 8393 z + 4215
   //  ------------------------
@@ -366,8 +424,8 @@ void Car::Controller(){
   
 
   /*
-  // Root Locus Controller - SS: 140, K:15
-  // Results: Unstable - Does not follow the line
+  // Root Locus Controller - SS: 140
+  // System ID Results: Unstable - Very Oscillatory. Smoother with a gain of 0.985 but still unstable. Could be good around corners
 
   //  92.2 z^2 - 187.5 z + 95.7
   //  -------------------------
@@ -380,11 +438,12 @@ void Car::Controller(){
   #define E        (0.1L)
 
   this->motorDiffPWM = A * this->totalError + B * this->totalErrorHold[0] + C * this->totalErrorHold[1] - D * this->motorDiffPWMHold[0] - E * this->motorDiffPWMHold[1];
+  this->motorDiffPWM = this->motorDiffPWM * 0.985L;
   */
 
   /*
   // Root Locus Controller - SS: 120, K:10
-  // Results: Unstable - Very slow response time
+  // System ID Results: Unstable - very oscillatory
 
   //  250 z^2 - 499.5 z + 250
   //  -----------------------
@@ -403,11 +462,12 @@ void Car::Controller(){
   double tmpE = E * this->motorDiffPWMHold[1];
 
   this->motorDiffPWM = tmpA + tmpB + tmpC - tmpD - tmpE;
+  this->motorDiffPWM = this->motorDiffPWM * 0.98L;
   */
 
   /*
   // Root Locus Controller - SS: 100, K:7
-  // Results: Unstable - very oscillatory
+  // System ID Results: Stable - with a gain of 0.001
 
   //  58000 z^2 - 1.159e05 z + 5.8e04
   //  -------------------------------
@@ -426,6 +486,7 @@ void Car::Controller(){
   double tmpE = E * this->motorDiffPWMHold[1];
 
   this->motorDiffPWM = tmpA + tmpB + tmpC - tmpD - tmpE;
+  this->motorDiffPWM = this->motorDiffPWM * 0.001L;
   */
 
 
@@ -433,7 +494,7 @@ void Car::Controller(){
   /*
   // ------ PREDICTION OBSERVER CONTROLLERS -------
   // Prediction Observer Controller - SS: 160
-  // Results: Unstable - Does not follow the line
+  // System ID Results: Unstable - Opposite motorDiffPWM value (It is negative of what it should be)
 
   //                    2.457 z - 2.599
   //  D(z) = ----------------------------- 
@@ -449,7 +510,7 @@ void Car::Controller(){
 
   /*
   // Prediction Observer Controller - SS: 160
-  // Results: Stable - One of the best so far. A tad jerky
+  // System ID Results: Stable - A tad oscillatory but stable. Good with a gain of around 2.
 
   //              578.1 z - 567.1
   // Dz = ------------------------------
@@ -461,8 +522,8 @@ void Car::Controller(){
   #define D        (-0.1143L)
 
   this->motorDiffPWM = A * this->totalErrorHold[0] + B * this->totalErrorHold[1] - C * this->motorDiffPWMHold[0] - D * this->motorDiffPWMHold[1];
+  this->motorDiffPWM = this->motorDiffPWM * 2L;
   */
-
 
 
   /*
@@ -476,12 +537,13 @@ void Car::Controller(){
   /*
   // ------ IH-LQR CONTROLLERS -------
   // IH-LQR Controller - SS: 160
-  // Results: Stable - A bit jerky
+  // System ID Results: Stable - Good with a gain of .1 or .2 . Might do well around corners
+  // Curvy Track Results: Moderate - alright track run, not aggressive enough around sharp corners
 
   //      2587 z^2 - 1930 z
   //  -------------------------
   //  z^2 - 0.4313 z + 0.003083
-
+     
   #define A        (2587L)
   #define B        (-1930L)
   #define C        (0L)
@@ -489,11 +551,12 @@ void Car::Controller(){
   #define E        (0.003083L)
 
   this->motorDiffPWM = A * this->totalError + B * this->totalErrorHold[0] + C * this->totalErrorHold[1] - D * this->motorDiffPWMHold[0] - E * this->motorDiffPWMHold[1];
+  this->motorDiffPWM = this->motorDiffPWM * 0.2L;
   */
 
-  /*
+  /*  
   // IH-LQR Controller - SS: 140
-  // Results: Marginally Stable - Very oscillatory
+  // System ID Results: Stable with a gain around 0.1
 
   //      417.3 z^2 - 36.24 z
   //  ---------------------------
@@ -506,11 +569,12 @@ void Car::Controller(){
   #define E        (0.0000004477L)
 
   this->motorDiffPWM = A * this->totalError + B * this->totalErrorHold[0] + C * this->totalErrorHold[1] - D * this->motorDiffPWMHold[0] - E * this->motorDiffPWMHold[1];
+  this->motorDiffPWM = this->motorDiffPWM * 0.1L;
   */
 
-  /*
+  /*  
   // IH-LQR Controller - SS: 120
-  // Results: Marginally Stable - Very oscillatory
+  // System ID Results: Stable - With a gain of 0.1 . A tad oscialltory.
 
   //      419.8 z^2 + 0.5545 z
   //  ----------------------------
@@ -523,11 +587,12 @@ void Car::Controller(){
   #define E        (-0.00000000006808L)
 
   this->motorDiffPWM = A * this->totalError + B * this->totalErrorHold[0] + C * this->totalErrorHold[1] - D * this->motorDiffPWMHold[0] - E * this->motorDiffPWMHold[1];
+  this->motorDiffPWM = this->motorDiffPWM * 0.1L;
   */
 
   /*
   // IH-LQR Controller - SS: 100
-  // Results: Marginally Stable - Very oscillatory
+  // System ID Results: Stable - Slow and steady with a gain of 0.1 . Could be good around corners.
 
   //      419.1 z^2 - 10.47 z
   //  ---------------------------
@@ -540,8 +605,8 @@ void Car::Controller(){
   #define E        (-0.0000001287L)
 
   this->motorDiffPWM = A * this->totalError + B * this->totalErrorHold[0] + C * this->totalErrorHold[1] - D * this->motorDiffPWMHold[0] - E * this->motorDiffPWMHold[1];
+  this->motorDiffPWM = this->motorDiffPWM * 0.1L;
   */
-  
 }
 
 
@@ -573,8 +638,8 @@ void Car::MotorDiff(){
   rightSpeed  = this->pwmSetSpeed - (this->motorDiffPWM);
 
   // Ensuring the values are between 0-255
-  if(leftSpeed  > 255){ leftSpeed   = 255; }
-  if(rightSpeed > 255){ rightSpeed  = 255; }
+  if(leftSpeed  > MAX_SPEED_VAL){ leftSpeed   = MAX_SPEED_VAL; }
+  if(rightSpeed > MAX_SPEED_VAL){ rightSpeed  = MAX_SPEED_VAL; }
   if(leftSpeed  < 0)  { leftSpeed   = 0; }
   if(rightSpeed < 0)  { rightSpeed  = 0; }
 
@@ -600,7 +665,7 @@ void Car::MotorDiff(){
  * Description: Pushes a value onto the top of an array to hold
  * 
  */
-void Push_Onto_Array(double input[], double pushVal, int arraySize){
+void Push_Onto_Array(volatile double input[], volatile double pushVal, int arraySize){
   int i;
   
   for(i=arraySize - 2 ; i >= 0 ; i--){
@@ -608,5 +673,11 @@ void Push_Onto_Array(double input[], double pushVal, int arraySize){
   }
   
   input[0] = pushVal;
+}
+
+
+void callback(void){
+  BLF536.Read_Sensors_And_Obtain_Errors();
+  counter++;
 }
 

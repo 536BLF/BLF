@@ -32,8 +32,8 @@
 #define IMPULSE_VALUE         (1000L)             // The error to create for the system identification IN MILLIMETERS
 #define MAX_NUM_SAMPLES       (500)               // Number of samples to record
 
-#define SETSPEED              (160L)      // Arbitrary - found through experemental values
-// #define KPROP                 (10L)      // Proportional controller constant
+#define SETSPEED              (100L)     // Arbitrary - found through experemental values
+#define KPROP                 (100L)     // Proportional controller constant
 #define MAX_SPEED_VAL         (255L)     // Max input into the motors
 
 

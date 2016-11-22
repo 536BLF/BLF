@@ -1,6 +1,10 @@
 // Libraries
 #include "Macros.h"
 #include <AFMotor.h>
+#include <TimerOne.h>
+
+volatile unsigned long counter = 1;
+volatile unsigned long counterHold = 0;
 
 // Global Variables
 enum {INIT, READ_2_LINE, READ_LEFT_LINE, READ_RIGHT_LINE, READ_NO_LINE, INTERSECTION} state = INIT;
@@ -12,16 +16,17 @@ class Sensor{
     // Variables
     int       whiteLine;                    // Whether we are reading a black or white line
     uint8_t   pin;                          // Analog input pin select for the sensor
-    double    sensorVals_T0[NUM_SENSORS];   // Sensor values for T = 0
-    double    sensorVals_T1[NUM_SENSORS];   // Sensor valeus for T = -1 (Sensor values from one time interval before
-    double    sensorVals_T2[NUM_SENSORS];   // Sensor valeus for T = -2 (Sensor values from two time intervals before
-    double    sensorMin;                    // Minimum sensor value
-    double    sensorMax;                    // Maximum sensor value
-    double    tmp;                          // Temporary value for sensor readings
-    double    error;                        // Error value for the sensor - between -3.5 and 3.5 CENTIMETERS
-    double    lineVal;                      // The line value calculated from the current sensor values - between 0 and 7000
-    double    initLineVal;                  // Initialized line value based on where the car begins
-    double    sensedVal;
+    volatile double    sensorVals_T0[NUM_SENSORS];   // Sensor values for T = 0
+    volatile double    sensorVals_T1[NUM_SENSORS];   // Sensor valeus for T = -1 (Sensor values from one time interval before
+    volatile double    sensorVals_T2[NUM_SENSORS];   // Sensor valeus for T = -2 (Sensor values from two time intervals before
+    volatile double    sensorMin;                    // Minimum sensor value
+    volatile double    sensorMax;                    // Maximum sensor value
+    volatile double    tmp;                          // Temporary value for sensor readings
+    volatile double    error;                        // Error value for the sensor - between -3.5 and 3.5 CENTIMETERS
+    volatile double    lineVal;                      // The line value calculated from the current sensor values - between 0 and 7000
+    volatile double    initLineVal;                  // Initialized line value based on where the car begins
+    volatile double    sensedVal;
+    volatile double    sensedValHold    = 0;
     
     // Functions
     void Init_Sensors();
@@ -71,14 +76,15 @@ class Car
   public:
 
     // Variables
-    unsigned long timer             = 0;            // Timer to ensure that the each loop runs T second intervals 
-    double        setPoint          = 1;            // Set point for system identification: 1 for system identification, 0 for regular control
-    double        pwmSetSpeed       = SETSPEED;     // Setting the PWM speed   
-    double        pos;                              // The position of the vehicle in reference to the set point
-    double        totalError;                       // The total error of the vehicle from its set point
-    double        totalErrorHold[HOLD_AMOUNT];      // Holding the total error amounts
-    double        motorDiffPWM;                     // The motor differential PWM
-    double        motorDiffPWMHold[HOLD_AMOUNT];    // Holding the motor differential ammounts
+    volatile unsigned long timer             = 0;            // Timer to ensure that the each loop runs T second intervals 
+    volatile double        setPoint          = 0;            // Set point for system identification: 1 for system identification, 0 for regular control
+    volatile double        pwmSetSpeed       = SETSPEED;     // Setting the PWM speed   
+    volatile double        pos;                              // The position of the vehicle in reference to the set point
+    volatile double        posHold            = 0;            // Deadband
+    volatile double        totalError;                       // The total error of the vehicle from its set point
+    volatile double        totalErrorHold[HOLD_AMOUNT];      // Holding the total error amounts
+    volatile double        motorDiffPWM;                     // The motor differential PWM
+    volatile double        motorDiffPWMHold[HOLD_AMOUNT];    // Holding the motor differential ammounts
     AF_DCMotor    *MotorRightPtr;
     AF_DCMotor    *MotorLeftPtr;
 
@@ -112,33 +118,59 @@ void setup(){
   leftSensor.Init_Sensors();
   rightSensor.Init_Sensors();
 
+  Timer1.initialize(10000L);         // initialize timer1, 
+  Timer1.attachInterrupt(callback, 10000L);
+
   // --- INIT COMPUTER --- //
-  BLF536.Sample_Time();
+  //BLF536.timer = micros() + 10000;
 }
 
 
 void loop(){
-  // tester.Start_Timer();    // Timer Begin
   
 
   // --- HOLDS HERE TO GET EXACTLY THE T SECOND INTERVAL --- //
-  BLF536.Sample_Time();
+  // BLF536.Sample_Time();
 
-  // --- SENSORS --- //
-  BLF536.Read_Sensors_And_Obtain_Errors();
-  
-  // --- CONTROLLER --- //
-  BLF536.Controller();
-
-  // --- MOTOR CONTROL --- //
-  BLF536.MotorDiff();
 
   
-  // --- TESTING: Uncomment any of these below if you want to see specific outputs to the serial port --- //
-  tester.SystemId();
-  // tester.Print_Total_Error();
-  // tester.Print_Line_Values();
-  // tester.Print_Sensor_Values();
+  if(counter!=counterHold){
+
+  // --- THIS SHOULD BE UNCOMMENTED IF NOT USING INTERRUPTS --- //
+  /* 
+  if(BLF536.timer < micros()){
   
-  // tester.Display_Timer();   // Displays Timer
+    // --- SENSORS --- // 
+    BLF536.Read_Sensors_And_Obtain_Errors();
+    BLF536.timer = micros() + 10000L;
+  */
+    
+    // --- CONTROLLER --- //
+    BLF536.Controller();
+
+
+    // --- MOTOR CONTROL --- //
+    BLF536.MotorDiff();
+
+
+    // --- TESTING: Uncomment any of these below if you want to see specific outputs to the serial port --- //
+    
+    // Serial.println(BLF536.totalError);
+    // Serial.println(BLF536.motorDiffPWM);
+    
+    tester.SystemId();
+    // tester.Print_Total_Error();
+    // tester.Print_Line_Values();
+    // tester.Print_Sensor_Values();
+
+
+    // --- DISPLAYING TIMERS --- //
+    // tester.Display_Timer();  // Displays Timer
+    // tester.Start_Timer();    // Begins Timer
+
+
+    // Updating counter to look for next interrupt
+    counterHold = counter;
+  }
+    
 }
