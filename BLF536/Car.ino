@@ -1,64 +1,28 @@
-/*
+/**************************************************************
+ * 
  * Function: Car
  * Author: Alper Ender
  * Description: Constructor for the Car class
- */
+ * 
+ **************************************************************/
 Car::Car(){
 
 }
 
 
-/*
- * Function: Sample_Time
- * Author: Alper Ender
- * Description: Holds the processor here until the sampling time, T has been reached.
- *              Ensures that each loop through main takes approximately T seconds every time.
- *              
- *              --- THIS IS AN INEFFICIENT DELAY LOOP - TO BE DELETED ---
- *              
- */
-void Car::Sample_Time(void){
-
-  // Initializing the timer at the beginning
-  if(this->timer == 0){ 
-    this->timer = millis() + SAMPLING_TIME;
-    return;
-  }
-
-  // Holds the processor here until the sampling time has been reached
-  while(millis() < this->timer) {}
-
-  // Updates the timer to the next sample time
-  this->timer = this->timer + SAMPLING_TIME;
-  
-}
-
-
-/*
+/**************************************************************
+ * 
  * Function: Read_Sensors_And_Obtain_Errors
  * Author: Alper Ender
  * Description: Reads both sensors, calculates the line value errors, and obtains the sensor error calc for 2 lines.
  *              NOTE: This should be changed when we switch to FSM design
- */
+ *              
+ **************************************************************/
 void Car::Read_Sensors_And_Obtain_Errors(void){
 
   // Reading all the sensors
   leftSensor.Read_All_Sensors();
   rightSensor.Read_All_Sensors();
-
-  /*
-
-  --- FUNCTIONALITY NOT WORKING AS EXPECTED - TO BE DELETED ---
-  
-  if(Check_Lost_Right_Line){
-    rightSensor.Hold_Value();
-  }
-
-  if(Check_Lost_Left_Line){
-    leftSensor.Hold_Value();
-  }
-  
-  */
   
   // Calculating the line errors for each sensor
   leftSensor.Sensor_Calc();
@@ -99,7 +63,8 @@ void Car::Read_Sensors_And_Obtain_Errors(void){
 }
 
 
-/*
+/**************************************************************
+ * 
  * Function: Controller
  * Author: Alper Ender
  * Description: Controller for the vehicle
@@ -118,7 +83,7 @@ void Car::Read_Sensors_And_Obtain_Errors(void){
  *      this->motorDiffPWMHold[2]   : Motor Diff of T = -3
  *      this->motorDiffPWMHold[3]   : Motor Diff of T = -4
  * 
- */
+ **************************************************************/
 void Car::Controller(){
   
   /*
@@ -699,11 +664,13 @@ void Car::Controller(){
 }
 
 
-/*
+/**************************************************************
+ * 
  * Function: MotorDiff
  * Author: Ben Wagner
  * Description: Motor Control, saves the current error and motor differential values
- */
+ * 
+ **************************************************************/
 void Car::MotorDiff(){
   double rightSpeed, leftSpeed;
   int left, right;
@@ -751,12 +718,13 @@ void Car::MotorDiff(){
 }
 
 
-/*
+/**************************************************************
+ * 
  * Function: Push_Onto_Array
  * Author: Alper Ender
  * Description: Pushes a value onto the top of an array to hold
  * 
- */
+ **************************************************************/
 void Push_Onto_Array(volatile double input[], volatile double pushVal, int arraySize){
   int i;
   
@@ -768,11 +736,13 @@ void Push_Onto_Array(volatile double input[], volatile double pushVal, int array
 }
 
 
-/*
+/**************************************************************
+ * 
  * Function: callback
  * Author: Alper Ender
  * Description: ISR for the Arduino - samples the sensors every T microseconds
- */
+ * 
+ **************************************************************/
 void callback(void){
   BLF536.Read_Sensors_And_Obtain_Errors();
   counter++;

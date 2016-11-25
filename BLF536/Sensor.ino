@@ -1,8 +1,10 @@
-/*
+/**************************************************************
+ * 
  * Function: Sensor
  * Author: Alper Ender
  * Description: Constructor for the sensor. Initializes the pin and values for a new sensor
- */
+ * 
+ **************************************************************/
 Sensor::Sensor(const uint8_t& pinVal, int whiteLine) {
   this->pin = pinVal;
   this->whiteLine = whiteLine;
@@ -12,12 +14,14 @@ Sensor::Sensor(const uint8_t& pinVal, int whiteLine) {
 }
 
 
-/*
+/**************************************************************
+ * 
  * Function: Mux_Select
  * Author: Alper Ender
  * Description: Selects the correct S2, S1, and S0 to obtain the correct sensor depending on the input.
  *              There is a 4 uS delay for the mux to have time to properly switch
- */
+ *              
+ **************************************************************/
 void Sensor::Mux_Select(int muxSelect) {
 
   switch (muxSelect) {
@@ -37,11 +41,13 @@ void Sensor::Mux_Select(int muxSelect) {
 }
 
 
-/*
+/**************************************************************
+ * 
  * Function: Init_Sensors
  * Author: Alper Ender
  * Description: Initializes the sensor select pins and calibrates the sensor
- */
+ * 
+ **************************************************************/
 void Sensor::Init_Sensors(void) {
 
   pinMode(PIN_S2, OUTPUT);            // Select S2 - PIN A5
@@ -53,11 +59,13 @@ void Sensor::Init_Sensors(void) {
 }
 
 
-/*
+/**************************************************************
+ * 
  * Function: Calibrate
  * Author: Alper Ender
  * Description: Calibrates a sensor array by cycling through the mux and obtaining the max and min values for the array
- */
+ * 
+ **************************************************************/
 void Sensor::Calibrate(void) {
   int i = 0;
   double sensorVal = 0;
@@ -90,11 +98,13 @@ void Sensor::Calibrate(void) {
 }
 
 
-/*
+/**************************************************************
+ * 
  * Function: Read_All_Sensors
  * Author: Alper Ender
  * Description: Calibrates a sensor array by cycling through the mux and obtaining the max and min values for the array
- */
+ * 
+ **************************************************************/
 void Sensor::Read_All_Sensors(void) {
   int i = 0;
   this->tmp = 0;
@@ -130,11 +140,13 @@ void Sensor::Read_All_Sensors(void) {
 }
 
 
-/*
+/**************************************************************
+ * 
  * Function: Read_All_Sensors
  * Author: Alper Ender
  * Description: Storing the old sensor values in case we lose the line and we need to go off of old sensor values
- */
+ * 
+ **************************************************************/
 void Sensor::Array_Copy(void) {
   int i;
   for (i = 0 ; i < NUM_SENSORS ; i++) {
@@ -144,11 +156,13 @@ void Sensor::Array_Copy(void) {
 }
 
 
-/*
+/**************************************************************
+ * 
  * Function: Read_Average
  * Author: Alper Ender
  * Description: Reading a couple of samples and obtaining the average of the samples
- */
+ * 
+ **************************************************************/
 int Sensor::Read_Average(void) {
   int i;
   double total = 0;
@@ -167,7 +181,8 @@ int Sensor::Read_Average(void) {
 }
 
 
-/*
+/**************************************************************
+ * 
  * Function: Get_Line_Value
  * Author: Alper Ender
  * Description: Obtaining the value between 0 - 7000 where the center of the line is located on the array according to the sensors
@@ -178,7 +193,7 @@ int Sensor::Read_Average(void) {
  *                    
  * The exact center value of the line is obtained through calibration
  * 
- */
+ **************************************************************/
 void Sensor::Get_Line_Value(void) {
   int     i     = 0;
   double  j     = 0;
@@ -209,11 +224,13 @@ void Sensor::Get_Line_Value(void) {
 
 }
 
-/*
+/**************************************************************
+ * 
  * Function: Sensor_Error_Calc
  * Author: Alper Ender
  * Description: Obtain the error calculation for the array on the line
- */
+ * 
+ **************************************************************/
 void Sensor::Sensor_Calc(void) {
 
   // Get the line value between 0 - 7000
@@ -226,11 +243,13 @@ void Sensor::Sensor_Calc(void) {
 }
 
 
-/*
+/**************************************************************
+ * 
  * Function: Hold_Value
  * Author: Alper Ender
  * Description: Updates the T0 sensor values with the T1 sensor values to ensure that error calculations can still run
- */
+ * 
+ **************************************************************/
 void Sensor::Hold_Value(void){
   for (int i = 0 ; i < NUM_SENSORS ; i++) {
     this->sensorVals_T0[i] = this->sensorVals_T1[i];

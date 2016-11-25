@@ -1,18 +1,22 @@
-/*
+/**************************************************************
+ * 
  * Function: Tester
  * Author: Alper Ender
  * Description: Constructor of the Tester class
- */
+ * 
+ **************************************************************/
 Tester::Tester(){
   
 }
 
 
-/*
+/**************************************************************
+ * 
  * Function: Print_Sensor_Values
  * Author: Alper Ender
  * Description: Prints the entire sensor array for both the left and right sensors
- */
+ * 
+ **************************************************************/
 void Tester::Print_Sensor_Values(void){
   int i;
 
@@ -30,11 +34,13 @@ void Tester::Print_Sensor_Values(void){
 }
 
 
-/*
+/**************************************************************
+ * 
  * Function: Print_Line_Values
  * Author: Alper Ender
  * Description: Obtains the line values for the sensors and Prints the Line Values for each sensor
- */
+ * 
+ **************************************************************/
 void Tester::Print_Line_Values(void){
   leftSensor.Get_Line_Value();
   Serial.print("Left:\t"); Serial.print(leftSensor.lineVal); Serial.print("\t");
@@ -43,11 +49,13 @@ void Tester::Print_Line_Values(void){
 }
 
 
-/*
+/**************************************************************
+ * 
  * Function: Print_Total_Error
  * Author: Alper Ender
  * Description: Obtains the error valeus and prints the total error values for the car
- */
+ * 
+ **************************************************************/
 void Tester::Print_Total_Error(void){
   Serial.print("LeftINIT:\t"); Serial.print(leftSensor.initLineVal); Serial.print("\t");
   Serial.print("RightINIT:\t"); Serial.print(rightSensor.initLineVal); Serial.print("\t");
@@ -60,32 +68,27 @@ void Tester::Print_Total_Error(void){
 }
 
 
-/*
+/**************************************************************
+ * 
  * Function: Start_Timer
  * Author: Alper Ender
  * Description: Starts a local timer
- */
+ * 
+ **************************************************************/
 void Tester::Start_Timer(void){
   this->timerVal = micros();
 }
 
 
-/*
+/**************************************************************
+ * 
  * Function: Display Timer
  * Author: Alper Ender
  * Description: Displays the amount of time in MICROSECONDS that has gone by since the timer was started
- */
+ * 
+ **************************************************************/
 void Tester::Display_Timer(void){
   Serial.println(micros() - this->timerVal);
 }
 
-
-/*
- * Function: SystemId
- * Author: Alper Ender
- * Description: Prints the position of the vehicle from a range of -3.5 cm to 3.5 cm
- */
-void Tester::SystemId(void){
-  Serial.println(BLF536.pos);
-}
 

@@ -3,13 +3,20 @@
 #include <AFMotor.h>
 #include <TimerOne.h>
 
-volatile unsigned long counter = 1;
-volatile unsigned long counterHold = 0;
 
 // Global Variables
 enum {INIT, READ_2_LINE, READ_LEFT_LINE, READ_RIGHT_LINE, READ_NO_LINE, INTERSECTION} state = INIT;
+volatile unsigned long counter = 1;
+volatile unsigned long counterHold = 0;
 
 
+/**************************************************************
+ * 
+ * Class: Sensor
+ * Author: Alper Ender
+ * Description: Holds the class variables and functions for all the sensors
+ * 
+ **************************************************************/
 class Sensor{
   public:
   
@@ -49,6 +56,13 @@ Sensor leftSensor(PIN_ANALOG_0, BLACK_LINE);
 Sensor rightSensor(PIN_ANALOG_1, BLACK_LINE);
 
 
+/**************************************************************
+ * 
+ * Class: Tester
+ * Author: Alper Ender
+ * Description: Holds the class variables and functions for printing and displaying values onto the serial
+ * 
+ **************************************************************/
 class Tester{
   public:
   
@@ -61,7 +75,6 @@ class Tester{
     void Print_Total_Error(void);
     void Start_Timer(void);
     void Display_Timer(void);
-    void SystemId(void);
     
     // Constructor
     Tester();
@@ -71,6 +84,13 @@ class Tester{
 Tester tester;
 
 
+/**************************************************************
+ * 
+ * Class: Car
+ * Author: Alper Ender, Ben Wagner, and Eli Buckner
+ * Description: Holds the class variables and functions for the overall car
+ * 
+ **************************************************************/
 class Car
 {
   public:
@@ -107,6 +127,13 @@ AF_DCMotor MotorLeft(4);
 AF_DCMotor MotorRight(3);
 
 
+/**************************************************************
+ * 
+ * Function: Setup
+ * Author: Alper Ender
+ * Description: Runs once before the main loop
+ * 
+ **************************************************************/
 void setup(){
   Serial.begin(115200);
 
@@ -127,6 +154,13 @@ void setup(){
 }
 
 
+/**************************************************************
+ * 
+ * Function: loop
+ * Author: Alper Ender
+ * Description: The main of the program - runs forever
+ * 
+ **************************************************************/
 void loop(){
   
   if(counter!=counterHold){
@@ -149,11 +183,11 @@ void loop(){
 
 
     // --- TESTING: Uncomment any of these below if you want to see specific outputs to the serial port --- //
-    
+
+    Serial.println(BLF536.pos);
     // Serial.println(BLF536.totalError);
     // Serial.println(BLF536.motorDiffPWM);
     
-    tester.SystemId();
     // tester.Print_Total_Error();
     // tester.Print_Line_Values();
     // tester.Print_Sensor_Values();

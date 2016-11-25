@@ -1,24 +1,18 @@
-
-
-
-
 /*----------------------------------------------------------------------
-*
-*    THESE FUNCTIONS ARE NOT COMPLETED NOR ARE THEY TESTED  (11/18)   
-*
-* --------------------------------------------------------------------*/
+ *
+ *    THESE FUNCTIONS ARE NOT COMPLETED NOR ARE THEY TESTED  (11/25)   
+ *
+ * --------------------------------------------------------------------*/
 
-
-
-
-
-/*
-   Function: FSM
-   Description: The finite state machine to determine which state the vehicle is currently in
-
-   --- THIS FUNCTION IS CURRENTLY INCOMPLETE - 11/5 ---
-
-*/
+/**************************************************************
+ * 
+ * Function: FSM
+ * Author: Ben Wagner and Alper Ender
+ * Description: The finite state machine to determine the state of the vehicle
+ * 
+ * --- THIS FUNCTION IS CURRENTLY INCOMPLETE - 11/5 ---
+ * 
+ *************************************************************/
 void FSM(void) {
   switch (state) {
     
@@ -55,14 +49,15 @@ void FSM(void) {
 }
 
 
-/*
-   Function: Read_Sate
-   Author: Alper Ender and Ben Wagner
-   Description: The function that determines the next state based on what the sensors are seeing.
-
-   --- THIS FUNCTION IS CURRENTLY INCOMPLETE - 11/8 ---
-
-*/
+/**************************************************************
+ * 
+ * Function: Read_Sate
+ * Author: Alper Ender and Ben Wagner
+ * Description: The function that determines the next state based on what the sensors are seeing.
+ *
+ * --- THIS FUNCTION IS CURRENTLY INCOMPLETE - 11/8 ---
+ *
+ **************************************************************/
 void Read_State(void) {
   boolean lostLeft, lostRight;
   int errorCalcSel;
@@ -106,10 +101,13 @@ void Read_State(void) {
 }
 
 
-/*
-   Function: Check_Intersection
-   Description: Checks the RIGHT sensor to see if it sees a corner. If it does, then it changes the FSM to the intersection state to handle this intersection
-*/
+/**************************************************************
+ * 
+ * Function: Check_Intersection
+ * Author: Alper Ender
+ * Description: Checks the RIGHT sensor to see if it sees a corner. If it does, then it changes the FSM to the intersection state to handle this intersection
+ * 
+ **************************************************************/
 int Check_Intersection(void) {
   if (     rightSensor.sensorVals_T0[4] > ON_LINE_THRESHOLD && rightSensor.sensorVals_T0[5] > ON_LINE_THRESHOLD
         && rightSensor.sensorVals_T0[6] > ON_LINE_THRESHOLD && rightSensor.sensorVals_T0[7] > ON_LINE_THRESHOLD) {
@@ -120,11 +118,13 @@ int Check_Intersection(void) {
 }
 
 
-/*
-* Function: Check_Lost_Right_Line
-* Author: Alper Ender
-* Description: Checks to see if the right sensor lost the line. Returns 1 if it did, else it returns 0
-*/
+/**************************************************************
+ * 
+ * Function: Check_Lost_Right_Line
+ * Author: Alper Ender
+ * Description: Checks to see if the right sensor lost the line. Returns 1 if it did, else it returns 0
+ * 
+ **************************************************************/
 int Check_Lost_Right_Line(void) {
   if (       rightSensor.sensorVals_T0[0] < OFF_LINE_THRESHOLD && rightSensor.sensorVals_T0[1] < OFF_LINE_THRESHOLD
          &&  rightSensor.sensorVals_T0[2] < OFF_LINE_THRESHOLD && rightSensor.sensorVals_T0[3] < OFF_LINE_THRESHOLD
@@ -137,11 +137,13 @@ int Check_Lost_Right_Line(void) {
 }
 
 
-/*
-* Function: Check_Lost_Right_Line
-* Author: Alper Ender
-* Description: Checks to see if the right sensor found the line. Returns 1 if it did, else it returns 0
-*/
+/**************************************************************
+ * 
+ * Function: Check_Lost_Right_Line
+ * Author: Alper Ender
+ * Description: Checks to see if the right sensor found the line. Returns 1 if it did, else it returns 0
+ * 
+ **************************************************************/
 int Check_Found_Right_Line(void) {
   if (       rightSensor.sensorVals_T0[0] > ON_LINE_THRESHOLD || rightSensor.sensorVals_T0[1] > ON_LINE_THRESHOLD
          ||  rightSensor.sensorVals_T0[2] > ON_LINE_THRESHOLD || rightSensor.sensorVals_T0[3] > ON_LINE_THRESHOLD
@@ -154,11 +156,13 @@ int Check_Found_Right_Line(void) {
 }
 
 
-/*
-* Function: Check_Lost_Right_Line
-* Author: Alper Ender
-* Description: Checks to see if the left sensor lost the line. Returns 1 if it did, else it returns 0
-*/
+/**************************************************************
+ * 
+ * Function: Check_Lost_Right_Line
+ * Author: Alper Ender
+ * Description: Checks to see if the left sensor lost the line. Returns 1 if it did, else it returns 0
+ * 
+ **************************************************************/
 int Check_Lost_Left_Line(void) {
   if (       leftSensor.sensorVals_T0[0] < OFF_LINE_THRESHOLD && leftSensor.sensorVals_T0[1] < OFF_LINE_THRESHOLD
          &&  leftSensor.sensorVals_T0[2] < OFF_LINE_THRESHOLD && leftSensor.sensorVals_T0[3] < OFF_LINE_THRESHOLD
@@ -171,11 +175,13 @@ int Check_Lost_Left_Line(void) {
 }
 
 
-/*
-* Function: Check_Lost_Right_Line
-* Author: Alper Ender
-* Description: Checks to see if the left sensor found the line. Returns 1 if it did, else it returns 0
-*/
+/**************************************************************
+ * 
+ * Function: Check_Lost_Right_Line
+ * Author: Alper Ender
+ * Description: Checks to see if the left sensor found the line. Returns 1 if it did, else it returns 0
+ * 
+ **************************************************************/
 int Check_Found_Left_Line(void) {
   if (       leftSensor.sensorVals_T0[0] > ON_LINE_THRESHOLD || leftSensor.sensorVals_T0[1] > ON_LINE_THRESHOLD
          ||  leftSensor.sensorVals_T0[2] > ON_LINE_THRESHOLD || leftSensor.sensorVals_T0[3] > ON_LINE_THRESHOLD
@@ -188,11 +194,13 @@ int Check_Found_Left_Line(void) {
 }
 
 
-/*
-* Function: Intersection
-* Author: Ben Wagner
-* Description: What to do when the vehicle reaches an intersection
-*/
+/**************************************************************
+ * 
+ * Function: Intersection
+ * Author: Ben Wagner
+ * Description: What to do when the vehicle reaches an intersection
+ * 
+ **************************************************************/
 void Intersection(void) {
   switch (random() % 3) {
     case 0: RightTurnOL(); break;
@@ -202,11 +210,13 @@ void Intersection(void) {
 }
 
 
-/*
-* Function: GoStraightOL
-* Author: Ben Wagner
-* Description: OPEN LOOP - Going Straight through the intersection
-*/
+/**************************************************************
+ * 
+ * Function: GoStraightOL
+ * Author: Ben Wagner
+ * Description: OPEN LOOP - Going Straight through the intersection
+ * 
+ **************************************************************/
 void GoStraightOL(void) {
   long timer = millis();
   while (millis() - timer < STRAIGHTTIME) {
@@ -217,11 +227,13 @@ void GoStraightOL(void) {
 }
 
 
-/*
-* Function: GoStraightOL
-* Author: Ben Wagner
-* Description: OPEN LOOP - Turning right at the intersection
-*/
+/**************************************************************
+ * 
+ * Function: GoStraightOL
+ * Author: Ben Wagner
+ * Description: OPEN LOOP - Turning right at the intersection
+ * 
+ **************************************************************/
 void RightTurnOL(void) {
   long timer = millis();
   while (millis() - timer < RIGHTTURNTIME) {
@@ -231,11 +243,13 @@ void RightTurnOL(void) {
 }
 
 
-/*
-* Function: GoStraightOL
-* Author: Ben Wagner
-* Description: OPEN LOOP - Turning left at the intersection
-*/
+/**************************************************************
+ * 
+ * Function: GoStraightOL
+ * Author: Ben Wagner
+ * Description: OPEN LOOP - Turning left at the intersection
+ * 
+ **************************************************************/
 void LeftTurnOL() {
   long timer = millis();
   while (millis() - timer < LEFTTURNTIME) {
