@@ -69,6 +69,7 @@ void Tester::Start_Timer(void){
   this->timerVal = micros();
 }
 
+
 /*
  * Function: Display Timer
  * Author: Alper Ender

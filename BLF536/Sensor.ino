@@ -180,12 +180,12 @@ int Sensor::Read_Average(void) {
  * 
  */
 void Sensor::Get_Line_Value(void) {
-  int i = 0;
-  double j = 0;
-  double total = 0;
-  double sum = 0;
-  double out = 0;
-  double tmp = 0;
+  int     i     = 0;
+  double  j     = 0;
+  double  total = 0;
+  double  sum   = 0;
+  double  out   = 0;
+  double  tmp   = 0;
 
   for (i = 0 ; i < NUM_SENSORS ; i++) {
 
@@ -202,8 +202,6 @@ void Sensor::Get_Line_Value(void) {
   if(sum == 0){
     sum = 1;
   }
-
-  
 
   // Dividing numerator by denominator
   out = total / sum;                          

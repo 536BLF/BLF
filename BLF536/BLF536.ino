@@ -118,21 +118,16 @@ void setup(){
   leftSensor.Init_Sensors();
   rightSensor.Init_Sensors();
 
-  Timer1.initialize(10000L);         // initialize timer1, 
-  Timer1.attachInterrupt(callback, 10000L);
+  // --- INIT INTERRUPTS --- //
+  Timer1.initialize(SAMPLING_TIME_MICRO); 
+  Timer1.attachInterrupt(callback, SAMPLING_TIME_MICRO);
 
-  // --- INIT COMPUTER --- //
+  // --- INIT TIMERS --- //
   //BLF536.timer = micros() + 10000;
 }
 
 
 void loop(){
-  
-
-  // --- HOLDS HERE TO GET EXACTLY THE T SECOND INTERVAL --- //
-  // BLF536.Sample_Time();
-
-
   
   if(counter!=counterHold){
 
@@ -143,7 +138,7 @@ void loop(){
     // --- SENSORS --- // 
     BLF536.Read_Sensors_And_Obtain_Errors();
     BLF536.timer = micros() + 10000L;
-  */
+   */
     
     // --- CONTROLLER --- //
     BLF536.Controller();

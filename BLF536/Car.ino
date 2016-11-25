@@ -13,6 +13,9 @@ Car::Car(){
  * Author: Alper Ender
  * Description: Holds the processor here until the sampling time, T has been reached.
  *              Ensures that each loop through main takes approximately T seconds every time.
+ *              
+ *              --- THIS IS AN INEFFICIENT DELAY LOOP - TO BE DELETED ---
+ *              
  */
 void Car::Sample_Time(void){
 
@@ -44,6 +47,9 @@ void Car::Read_Sensors_And_Obtain_Errors(void){
   rightSensor.Read_All_Sensors();
 
   /*
+
+  --- FUNCTIONALITY NOT WORKING AS EXPECTED - TO BE DELETED ---
+  
   if(Check_Lost_Right_Line){
     rightSensor.Hold_Value();
   }
@@ -51,6 +57,7 @@ void Car::Read_Sensors_And_Obtain_Errors(void){
   if(Check_Lost_Left_Line){
     leftSensor.Hold_Value();
   }
+  
   */
   
   // Calculating the line errors for each sensor
@@ -63,22 +70,30 @@ void Car::Read_Sensors_And_Obtain_Errors(void){
   rightSensor.sensedValHold = rightSensor.sensedVal;
   
   /*
+
+   --- ORIGINAL POSITION CALCULATION OF SENSORS - AVERAGE OF 2 ---
+  
   // Calculating the position of the vehicle in respect to the set point
   this->pos = (leftSensor.sensedVal + rightSensor.sensedVal) / 2;
+  
   */
   
-  // READING ONLY RIGHT SENSOR
+  // --- READING ONLY RIGHT SENSOR ---
   this->pos = rightSensor.sensedVal;
 
   // Calculating the total error for the vehicle
   this->totalError = this->pos - this->setPoint;
 
   /*
+
+  --- DEADBAND CALCULATION ---
+  
   #define DEADBAND_VAL (0.1)
 
   if(abs(this->totalErrorHold[0] - this->totalError) < DEADBAND_VAL){
     this->totalError = this->totalErrorHold[0];
   }
+  
   */
 
 }
@@ -110,9 +125,6 @@ void Car::Controller(){
   // Proportional controller, error times a constant = motor differential
   
   this->motorDiffPWM = KPROP * this->totalError; 
-  
-
-  // TAKE A LOOK AT THIS ONE - COMPUTER POWER, SS: 160, KPROP: 100
   */
 
 
@@ -141,6 +153,7 @@ void Car::Controller(){
   // PID  Controller - SS: 80
   // System ID Results: Stable at 160 SS
   // Curvy Track Results: Not good - not aggressive enough for the turns
+  // Curvy Track Results: UNTESTED
   
   //    15.62 z^2 - 30.34 z + 14.73
   //  ----------------------------
@@ -160,6 +173,7 @@ void Car::Controller(){
   /*
   // PID  Controller - SS: 160
   // System ID Results: Unstable - Very Oscillatory.
+  // Curvy Track Results: UNTESTED
 
   //       6.744 z^2 - 13.06 z + 6.321
   //  ----------------------------------
@@ -200,6 +214,7 @@ void Car::Controller(){
   /*
   // PID  Controller - SS: 120
   // System ID Results: Unstable - Right Wheel Doesn't Move
+  // Curvy Track Results: UNTESTED
 
   //       -33.96 z^2 + 62.84 z - 29.06
   //  ----------------------------------
@@ -219,6 +234,7 @@ void Car::Controller(){
   /*
   // PID  Controller - SS: 100
   // System ID Results: Unstable - changes wheels too fast - Only one wheel moves at a time.
+  // Curvy Track Results: UNTESTED
 
   //       35.67 z^2 - 69.63 z + 33.98
   //  ----------------------------------
@@ -239,6 +255,7 @@ void Car::Controller(){
   /*
   // Alper PID TEST
   // System ID Results: Unstable - Does not follow the line
+  // Curvy Track Results: UNTESTED
 
   //   434.9 z^2 - 849.9 z + 415.2
   //  ---------------------------
@@ -268,6 +285,7 @@ void Car::Controller(){
   // SISO Lead/Lag Controller - SS: 160
   // System ID Results: Stable - High Settling Time
   //                 - Faster settling time with a gain of 2 but choppier
+  // Curvy Track Results: UNTESTED
 
   #define A            (25.52L)
   #define B            (-10.21L)
@@ -310,6 +328,7 @@ void Car::Controller(){
   /*
   // SISO Lead/Lag Controller - SS: 160
   // System ID Results: Stable - A little bit of oscillation but not too bad
+  // Curvy Track Results: UNTESTED
 
   // (80.73z-0.7992)/(z-0.0009048)
 
@@ -323,6 +342,7 @@ void Car::Controller(){
   /*
   // SISO Lead/Lag Controller - SS: 160
   // System ID Results: Stable - Very nice
+  // Curvy Track Results: UNTESTED
 
   // (139.3z-39.86)/(z-0.07)
 
@@ -351,6 +371,7 @@ void Car::Controller(){
   /*
   // SISO Lead/Lag Controller - SS: 100
   // System ID Results: Stable but jerky
+  // Curvy Track Results: UNTESTED
 
   // (1000z-950)/(z-0.95)
 
@@ -384,6 +405,7 @@ void Car::Controller(){
 
   // Root Locus Controller - SS: 160
   // System ID Results: Unstable - High rise and settling time
+  // Curvy Track Results: UNTESTED
 
   //  29.5 z^2 - 59.59 z + 30.12
   //  --------------------------
@@ -426,6 +448,7 @@ void Car::Controller(){
   /*
   // Root Locus Controller - SS: 140
   // System ID Results: Unstable - Very Oscillatory. Smoother with a gain of 0.985 but still unstable. Could be good around corners
+  // Curvy Track Results: UNTESTED
 
   //  92.2 z^2 - 187.5 z + 95.7
   //  -------------------------
@@ -444,6 +467,7 @@ void Car::Controller(){
   /*
   // Root Locus Controller - SS: 120, K:10
   // System ID Results: Unstable - very oscillatory
+  // Curvy Track Results: UNTESTED
 
   //  250 z^2 - 499.5 z + 250
   //  -----------------------
@@ -468,6 +492,7 @@ void Car::Controller(){
   /*
   // Root Locus Controller - SS: 100, K:7
   // System ID Results: Stable - with a gain of 0.001
+  // Curvy Track Results: UNTESTED
 
   //  58000 z^2 - 1.159e05 z + 5.8e04
   //  -------------------------------
@@ -495,6 +520,7 @@ void Car::Controller(){
   // ------ PREDICTION OBSERVER CONTROLLERS -------
   // Prediction Observer Controller - SS: 160
   // System ID Results: Unstable - Opposite motorDiffPWM value (It is negative of what it should be)
+  // Curvy Track Results: UNTESTED
 
   //                    2.457 z - 2.599
   //  D(z) = ----------------------------- 
@@ -511,6 +537,7 @@ void Car::Controller(){
   /*
   // Prediction Observer Controller - SS: 160
   // System ID Results: Stable - A tad oscillatory but stable. Good with a gain of around 2.
+  // Curvy Track Results: UNTESTED
 
   //              578.1 z - 567.1
   // Dz = ------------------------------
@@ -527,12 +554,71 @@ void Car::Controller(){
 
 
   /*
-
   // ------ CURRENT OBSERVER CONTROLLERS -------
-
+  // Prediction Observer Controller - SS: 160
+  // System ID Results: UNTESTED
+  // Curvy Track Results: UNTESTED
+     
+  #define A        (441L)
+  #define B        (-412L)
+  #define C        (0L)
+  #define D        (31.7L)
+  #define E        (-31.3L)
+  #define F        (4.73L)
+ 
+  this->motorDiffPWM = (A * this->totalError + B * this->totalErrorHold[0]   + C * this->totalErrorHold[1] 
+                                             - E * this->motorDiffPWMHold[0] - F * this->motorDiffPWMHold[1]) / D;
   */
 
+  /*
+  // Prediction Observer Controller - SS: 140
+  // System ID Results: UNTESTED
+  // Curvy Track Results: UNTESTED
+     
+  #define A        (340L)
+  #define B        (375L)
+  #define C        (0L)
+  #define D        (11.2L)
+  #define E        (-7.17L)
+  #define F        (1.693L)
+ 
+  this->motorDiffPWM = (A * this->totalError + B * this->totalErrorHold[0]   + C * this->totalErrorHold[1] 
+                                             - E * this->motorDiffPWMHold[0] - F * this->motorDiffPWMHold[1]) / D;
+  */
 
+  /*
+  // Prediction Observer Controller - SS: 120
+  // System ID Results: UNTESTED
+  // Curvy Track Results: UNTESTED
+     
+  #define A        (3870L)
+  #define B        (-4700L)
+  #define C        (0L)
+  #define D        (7.923L)
+  #define E        (-1.072L)
+  #define F        (1.159L)
+ 
+  this->motorDiffPWM = (A * this->totalError + B * this->totalErrorHold[0]   + C * this->totalErrorHold[1] 
+                                             - E * this->motorDiffPWMHold[0] - F * this->motorDiffPWMHold[1]) / D;
+  */
+
+  /*
+  // Prediction Observer Controller - SS: 100
+  // System ID Results: UNTESTED
+  // Curvy Track Results: UNTESTED
+     
+  #define A        (-3.158L)
+  #define B        (3.009L)
+  #define C        (0L)
+  #define D        (34.8L)
+  #define E        (-21.8L)
+  #define F        (5.098L)
+ 
+  this->motorDiffPWM = (A * this->totalError + B * this->totalErrorHold[0]   + C * this->totalErrorHold[1] 
+                                             - E * this->motorDiffPWMHold[0] - F * this->motorDiffPWMHold[1]) / D;
+  */
+
+  
 
   /*
   // ------ IH-LQR CONTROLLERS -------
@@ -557,6 +643,7 @@ void Car::Controller(){
   /*  
   // IH-LQR Controller - SS: 140
   // System ID Results: Stable with a gain around 0.1
+  // Curvy Track Results: UNTESTED
 
   //      417.3 z^2 - 36.24 z
   //  ---------------------------
@@ -575,6 +662,7 @@ void Car::Controller(){
   /*  
   // IH-LQR Controller - SS: 120
   // System ID Results: Stable - With a gain of 0.1 . A tad oscialltory.
+  // Curvy Track Results: UNTESTED
 
   //      419.8 z^2 + 0.5545 z
   //  ----------------------------
@@ -593,6 +681,7 @@ void Car::Controller(){
   /*
   // IH-LQR Controller - SS: 100
   // System ID Results: Stable - Slow and steady with a gain of 0.1 . Could be good around corners.
+  // Curvy Track Results: UNTESTED
 
   //      419.1 z^2 - 10.47 z
   //  ---------------------------
@@ -647,9 +736,12 @@ void Car::MotorDiff(){
   left  = (int)leftSpeed;
   right = (int)rightSpeed;
 
-  // Serial.print("\t,LEFT:\t"); Serial.print(left);
-  // Serial.print("\t,RIGHT:\t"); Serial.print(right);
-  // Serial.print("\t");
+  /*
+  // --- PRINTING LEFT AND RIGHT MOTOR VALS ---
+  Serial.print("\t,LEFT:\t"); Serial.print(left);
+  Serial.print("\t,RIGHT:\t"); Serial.print(right);
+  Serial.print("\t");
+  */
 
   // Throwing the motor values into the motors
   MotorRightPtr->setSpeed(right);
@@ -676,6 +768,11 @@ void Push_Onto_Array(volatile double input[], volatile double pushVal, int array
 }
 
 
+/*
+ * Function: callback
+ * Author: Alper Ender
+ * Description: ISR for the Arduino - samples the sensors every T microseconds
+ */
 void callback(void){
   BLF536.Read_Sensors_And_Obtain_Errors();
   counter++;
