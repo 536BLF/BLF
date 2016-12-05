@@ -12,30 +12,17 @@ Car::Car(){
 
 /**************************************************************
  * 
- * Function: Read_Sensors_And_Obtain_Errors
+ * Function: Obtain_Errors
  * Author: Alper Ender
  * Description: Reads both sensors, calculates the line value errors, and obtains the sensor error calc for 2 lines.
  *              NOTE: This should be changed when we switch to FSM design
  *              
  **************************************************************/
-void Car::Read_Sensors_And_Obtain_Errors(void){
-
-  // Reading all the sensors
-  leftSensor.Read_All_Sensors();
-  rightSensor.Read_All_Sensors();
-  
-  // Calculating the line errors for each sensor
-  leftSensor.Sensor_Calc();
-  rightSensor.Sensor_Calc();
-  
-  if(abs(rightSensor.sensedVal - rightSensor.sensedValHold) > 4){
-    rightSensor.sensedVal = rightSensor.sensedValHold;
-  }
-  rightSensor.sensedValHold = rightSensor.sensedVal;
+void Car::Obtain_Errors(void){
   
   /*
 
-   --- ORIGINAL POSITION CALCULATION OF SENSORS - AVERAGE OF 2 ---
+   --- ORIGINAL POSITION CALCULATION OF SENSORS - AVERAGE OF BOTH SIDES ---
   
   // Calculating the position of the vehicle in respect to the set point
   this->pos = (leftSensor.sensedVal + rightSensor.sensedVal) / 2;
@@ -43,14 +30,14 @@ void Car::Read_Sensors_And_Obtain_Errors(void){
   */
   
   // --- READING ONLY RIGHT SENSOR ---
-  this->pos = rightSensor.sensedVal;
+  // this->pos = rightSensor.sensedVal;
 
   // Calculating the total error for the vehicle
   this->totalError = this->pos - this->setPoint;
 
   /*
 
-  --- DEADBAND CALCULATION ---
+  --- DEADBAND CALCULATION - UNTESTED ---
   
   #define DEADBAND_VAL (0.1)
 
@@ -60,6 +47,107 @@ void Car::Read_Sensors_And_Obtain_Errors(void){
   
   */
 
+}
+
+
+/**************************************************************
+ * 
+ * Function: MotorDiff
+ * Author: Ben Wagner
+ * Description: Motor Control, saves the current error and motor differential values
+ * 
+ **************************************************************/
+void Car::MotorDiff(){
+  double rightSpeed, leftSpeed;
+  int left, right;
+ 
+  // Assume diffvalue < 0 as RIGHT turn and > 0 is a LEFT turn
+  if(this->motorDiffPWM > (MAX_SPEED_VAL - this->pwmSetSpeed)){
+    this->motorDiffPWM = MAX_SPEED_VAL - this->pwmSetSpeed;
+  }
+  else if (this->motorDiffPWM < (this->pwmSetSpeed - MAX_SPEED_VAL)){
+    this->motorDiffPWM = (this->pwmSetSpeed - MAX_SPEED_VAL);
+  }
+
+  // Pushes the current motor differential PWM value onto the hold array
+  Push_Onto_Array(this->motorDiffPWMHold, this->motorDiffPWM, HOLD_AMOUNT);
+  
+  // Pushes the current total error value in the hold array
+  Push_Onto_Array(this->totalErrorHold, this->totalError, HOLD_AMOUNT);
+
+  // Setting the left speed and the right speed
+  leftSpeed   = this->pwmSetSpeed + (this->motorDiffPWM);
+  rightSpeed  = this->pwmSetSpeed - (this->motorDiffPWM);
+
+  // Ensuring the values are between 0-255
+  if(leftSpeed  > MAX_SPEED_VAL){ leftSpeed   = MAX_SPEED_VAL; }
+  if(rightSpeed > MAX_SPEED_VAL){ rightSpeed  = MAX_SPEED_VAL; }
+  if(leftSpeed  < 0)  { leftSpeed   = 0; }
+  if(rightSpeed < 0)  { rightSpeed  = 0; }
+
+  // Casting the speeds as integers for the motors
+  left  = (int)leftSpeed;
+  right = (int)rightSpeed;
+
+  /*
+  // --- PRINTING LEFT AND RIGHT MOTOR VALS ---
+  Serial.print("\t,LEFT:\t"); Serial.print(left);
+  Serial.print("\t,RIGHT:\t"); Serial.print(right);
+  Serial.print("\t");
+  */
+
+  
+  // Throwing the motor values into the motors
+  MotorRightPtr->setSpeed(right);
+  MotorLeftPtr->setSpeed(left);
+  MotorRightPtr->run(FORWARD);
+  MotorLeftPtr->run(FORWARD);
+  
+}
+
+
+/**************************************************************
+ * 
+ * Function: Push_Onto_Array
+ * Author: Alper Ender
+ * Description: Pushes a value onto the top of an array to hold
+ * 
+ **************************************************************/
+void Push_Onto_Array(volatile double input[], volatile double pushVal, int arraySize){
+  int i;
+  
+  for(i=arraySize - 2 ; i >= 0 ; i--){
+    input[i+1] = input[i];
+  }
+  
+  input[0] = pushVal;
+}
+
+
+/**************************************************************
+ * 
+ * Function: callback
+ * Author: Alper Ender
+ * Description: ISR for the Arduino - samples the sensors every T microseconds
+ * 
+ **************************************************************/
+void callback(void){
+  
+  // Reading all the sensors
+  leftSensor.Read_All_Sensors();
+  rightSensor.Read_All_Sensors();
+
+  // Calculating the line errors for each sensor
+  leftSensor.Sensor_Calc();
+  rightSensor.Sensor_Calc();
+
+  // Checking sensors to ensure there aren't large deviations from the old sensed val - Utilizes old value if the vehicle loses the line
+  if(state != INTERSECTION){
+    rightSensor.Check_Sensed_Val();
+    leftSensor.Check_Sensed_Val();
+  }
+  
+  counter++;
 }
 
 
@@ -118,7 +206,6 @@ void Car::Controller(){
   // PID  Controller - SS: 80
   // System ID Results: Stable at 160 SS
   // Curvy Track Results: Not good - not aggressive enough for the turns
-  // Curvy Track Results: UNTESTED
   
   //    15.62 z^2 - 30.34 z + 14.73
   //  ----------------------------
@@ -157,7 +244,7 @@ void Car::Controller(){
 
   /*
   // PID  Controller - SS: 140
-  // System ID Results: Stable - with a gain of 0.96 . Might do well with curves
+  // System ID Results: Unstable - Does not follow the line
   // Curvy Track Results: Moderate - Needs to be more aggressive with curves
 
   //       2.127 z^2 - 3.957 z + 1.841
@@ -173,8 +260,9 @@ void Car::Controller(){
  
   this->motorDiffPWM = (PID_VAL_A * this->totalError + PID_VAL_B * this->totalErrorHold[0]   + PID_VAL_C * this->totalErrorHold[1] 
                                                      - PID_VAL_E * this->motorDiffPWMHold[0] - PID_VAL_F * this->motorDiffPWMHold[1]) / PID_VAL_D;
-  this->motorDiffPWM = this->motorDiffPWM * 0.96L;
+  this->motorDiffPWM = this->motorDiffPWM * 0.98L;
   */
+  
 
   /*
   // PID  Controller - SS: 120
@@ -318,7 +406,7 @@ void Car::Controller(){
   this->motorDiffPWM = A * this->totalError + B * this->totalErrorHold[0] - C * this->motorDiffPWMHold[0];  
   */
 
-  
+  /*
   // SISO Lead/Lag Controller - SS: 140
   // System ID Results: STABLE - Nice and slow. Even better with a gain of 5
   // Curvy Track Results: BEAUTIFUL - just a tad choppy 
@@ -331,6 +419,7 @@ void Car::Controller(){
 
   this->motorDiffPWM = A * this->totalError + B * this->totalErrorHold[0] - C * this->motorDiffPWMHold[0];  
   this->motorDiffPWM = this->motorDiffPWM * 5L;
+  */
   
 
   /*
@@ -517,11 +606,28 @@ void Car::Controller(){
   this->motorDiffPWM = this->motorDiffPWM * 2L;
   */
 
+  /*
+  // Prediction Observer Controller - SS: 100
+  // System ID Results: Stable - A little jittery
+  // Curvy Track Results: UNTESTED
+
+  //        2090 z - 1924
+  //  ----------------------
+  //  z^2 + 0.133 z - 0.4111
+
+  #define A        (2090L)
+  #define B        (-1924L)
+  #define C        (0.133L)
+  #define D        (-0.4111L)
+
+  this->motorDiffPWM = A * this->totalErrorHold[0] + B * this->totalErrorHold[1] - C * this->motorDiffPWMHold[0] - D * this->motorDiffPWMHold[1];
+  this->motorDiffPWM = this->motorDiffPWM * 1L;
+  */
 
   /*
   // ------ CURRENT OBSERVER CONTROLLERS -------
   // Prediction Observer Controller - SS: 160
-  // System ID Results: UNTESTED
+  // System ID Results: M.Stable - oscillatory behavior
   // Curvy Track Results: UNTESTED
      
   #define A        (441L)
@@ -529,15 +635,16 @@ void Car::Controller(){
   #define C        (0L)
   #define D        (31.7L)
   #define E        (-31.3L)
-  #define F        (4.73L)
+  #define G        (4.73L)
  
   this->motorDiffPWM = (A * this->totalError + B * this->totalErrorHold[0]   + C * this->totalErrorHold[1] 
-                                             - E * this->motorDiffPWMHold[0] - F * this->motorDiffPWMHold[1]) / D;
+                                             - E * this->motorDiffPWMHold[0] - G * this->motorDiffPWMHold[1]) / D;
+  this->motorDiffPWM = this->motorDiffPWM * 1.13L;
   */
 
   /*
   // Prediction Observer Controller - SS: 140
-  // System ID Results: UNTESTED
+  // System ID Results: M.Stable - Oscillatory
   // Curvy Track Results: UNTESTED
      
   #define A        (340L)
@@ -545,15 +652,15 @@ void Car::Controller(){
   #define C        (0L)
   #define D        (11.2L)
   #define E        (-7.17L)
-  #define F        (1.693L)
+  #define G        (1.693L)
  
   this->motorDiffPWM = (A * this->totalError + B * this->totalErrorHold[0]   + C * this->totalErrorHold[1] 
-                                             - E * this->motorDiffPWMHold[0] - F * this->motorDiffPWMHold[1]) / D;
+                                             - E * this->motorDiffPWMHold[0] - G * this->motorDiffPWMHold[1]) / D;
   */
 
   /*
   // Prediction Observer Controller - SS: 120
-  // System ID Results: UNTESTED
+  // System ID Results: Unstable - opposite of the way it should go
   // Curvy Track Results: UNTESTED
      
   #define A        (3870L)
@@ -561,15 +668,17 @@ void Car::Controller(){
   #define C        (0L)
   #define D        (7.923L)
   #define E        (-1.072L)
-  #define F        (1.159L)
+  #define G        (1.159L)
  
   this->motorDiffPWM = (A * this->totalError + B * this->totalErrorHold[0]   + C * this->totalErrorHold[1] 
-                                             - E * this->motorDiffPWMHold[0] - F * this->motorDiffPWMHold[1]) / D;
+                                             - E * this->motorDiffPWMHold[0] - G * this->motorDiffPWMHold[1]) / D;
+  this->motorDiffPWM = this->motorDiffPWM * 0.9L;
   */
+
 
   /*
   // Prediction Observer Controller - SS: 100
-  // System ID Results: UNTESTED
+  // System ID Results: Unstable
   // Curvy Track Results: UNTESTED
      
   #define A        (-3.158L)
@@ -577,10 +686,11 @@ void Car::Controller(){
   #define C        (0L)
   #define D        (34.8L)
   #define E        (-21.8L)
-  #define F        (5.098L)
+  #define G        (5.098L)
  
   this->motorDiffPWM = (A * this->totalError + B * this->totalErrorHold[0]   + C * this->totalErrorHold[1] 
-                                             - E * this->motorDiffPWMHold[0] - F * this->motorDiffPWMHold[1]) / D;
+                                             - E * this->motorDiffPWMHold[0] - G * this->motorDiffPWMHold[1]) / D;
+  this->motorDiffPWM = this->motorDiffPWM * 2.2L;
   */
 
   
@@ -604,6 +714,7 @@ void Car::Controller(){
   this->motorDiffPWM = A * this->totalError + B * this->totalErrorHold[0] + C * this->totalErrorHold[1] - D * this->motorDiffPWMHold[0] - E * this->motorDiffPWMHold[1];
   this->motorDiffPWM = this->motorDiffPWM * 0.2L;
   */
+ 
 
   /*  
   // IH-LQR Controller - SS: 140
@@ -643,7 +754,7 @@ void Car::Controller(){
   this->motorDiffPWM = this->motorDiffPWM * 0.1L;
   */
 
-  /*
+  
   // IH-LQR Controller - SS: 100
   // System ID Results: Stable - Slow and steady with a gain of 0.1 . Could be good around corners.
   // Curvy Track Results: UNTESTED
@@ -660,91 +771,62 @@ void Car::Controller(){
 
   this->motorDiffPWM = A * this->totalError + B * this->totalErrorHold[0] + C * this->totalErrorHold[1] - D * this->motorDiffPWMHold[0] - E * this->motorDiffPWMHold[1];
   this->motorDiffPWM = this->motorDiffPWM * 0.1L;
-  */
-}
-
-
-/**************************************************************
- * 
- * Function: MotorDiff
- * Author: Ben Wagner
- * Description: Motor Control, saves the current error and motor differential values
- * 
- **************************************************************/
-void Car::MotorDiff(){
-  double rightSpeed, leftSpeed;
-  int left, right;
- 
-  // Assume diffvalue < 0 as RIGHT turn and > 0 is a LEFT turn
-  if(this->motorDiffPWM > (MAX_SPEED_VAL - this->pwmSetSpeed)){
-    this->motorDiffPWM = MAX_SPEED_VAL - this->pwmSetSpeed;
-  }
-  else if (this->motorDiffPWM < (this->pwmSetSpeed - MAX_SPEED_VAL)){
-    this->motorDiffPWM = (this->pwmSetSpeed - MAX_SPEED_VAL);
-  }
-
-  // Pushes the current motor differential PWM value onto the hold array
-  Push_Onto_Array(this->motorDiffPWMHold, this->motorDiffPWM, HOLD_AMOUNT);
   
-  // Pushes the current total error value in the hold array
-  Push_Onto_Array(this->totalErrorHold, this->totalError, HOLD_AMOUNT);
 
-  // Setting the left speed and the right speed
-  leftSpeed   = this->pwmSetSpeed + (this->motorDiffPWM);
-  rightSpeed  = this->pwmSetSpeed - (this->motorDiffPWM);
 
-  // Ensuring the values are between 0-255
-  if(leftSpeed  > MAX_SPEED_VAL){ leftSpeed   = MAX_SPEED_VAL; }
-  if(rightSpeed > MAX_SPEED_VAL){ rightSpeed  = MAX_SPEED_VAL; }
-  if(leftSpeed  < 0)  { leftSpeed   = 0; }
-  if(rightSpeed < 0)  { rightSpeed  = 0; }
 
-  // Casting the speeds as integers for the motors
-  left  = (int)leftSpeed;
-  right = (int)rightSpeed;
+
 
   /*
-  // --- PRINTING LEFT AND RIGHT MOTOR VALS ---
-  Serial.print("\t,LEFT:\t"); Serial.print(left);
-  Serial.print("\t,RIGHT:\t"); Serial.print(right);
-  Serial.print("\t");
-  */
+  // --- FINAL CONTROLLER --- //
 
-  // Throwing the motor values into the motors
-  MotorRightPtr->setSpeed(right);
-  MotorLeftPtr->setSpeed(left);
-  MotorRightPtr->run(FORWARD);
-  MotorLeftPtr->run(FORWARD);
-}
+  double A, B, C, D, E, gain;
 
-
-/**************************************************************
- * 
- * Function: Push_Onto_Array
- * Author: Alper Ender
- * Description: Pushes a value onto the top of an array to hold
- * 
- **************************************************************/
-void Push_Onto_Array(volatile double input[], volatile double pushVal, int arraySize){
-  int i;
+  if(rightSensor.sensedVal < 1 || rightSensor.sensedVal > 6){
+        
+    // SISO Lead/Lag Controller - SS: 140
+    // System ID Results: STABLE - Nice and slow. Even better with a gain of 5
+    // Curvy Track Results: BEAUTIFUL - just a tad choppy 
   
-  for(i=arraySize - 2 ; i >= 0 ; i--){
-    input[i+1] = input[i];
+    // (272.9z-259.2)/(z-0.07)
+
+    this->pwmSetSpeed = 140;
+    
+    A = 272.9L;
+    B = -259.2L;
+    C = -0.07L;
+
+    gain = 5L;
+    
+    this->motorDiffPWM = A * this->totalError + B * this->totalErrorHold[0] - C * this->motorDiffPWMHold[0];  
+    this->motorDiffPWM = this->motorDiffPWM * gain;
+  
+  } else {
+  
+    // ------ IH-LQR CONTROLLERS -------
+    // IH-LQR Controller - SS: 160
+    // System ID Results: Stable - Good with a gain of .1 or .2 . Might do well around corners
+    // Curvy Track Results: Moderate - alright track run, not aggressive enough around sharp corners
+  
+    //      2587 z^2 - 1930 z
+    //  -------------------------
+    //  z^2 - 0.4313 z + 0.003083
+
+    this->pwmSetSpeed = 160;
+    
+    A = 2587L;
+    B = -1930L;
+    C = 0L;
+    D = -.4313L;
+    E = 0.003083L;
+
+    gain = 0.2L;
+  
+    this->motorDiffPWM = A * this->totalError + B * this->totalErrorHold[0] + C * this->totalErrorHold[1] - D * this->motorDiffPWMHold[0] - E * this->motorDiffPWMHold[1];
+    this->motorDiffPWM = this->motorDiffPWM * gain;
+      
   }
+  */
   
-  input[0] = pushVal;
-}
-
-
-/**************************************************************
- * 
- * Function: callback
- * Author: Alper Ender
- * Description: ISR for the Arduino - samples the sensors every T microseconds
- * 
- **************************************************************/
-void callback(void){
-  BLF536.Read_Sensors_And_Obtain_Errors();
-  counter++;
 }
 

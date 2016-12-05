@@ -62,9 +62,7 @@ void Tester::Print_Total_Error(void){
   leftSensor.Sensor_Calc();
   Serial.print("Left:\t"); Serial.print(leftSensor.error); Serial.print("\t");
   rightSensor.Sensor_Calc();
-  Serial.print("Right:\t"); Serial.print(rightSensor.error); Serial.print("\t");
-  BLF536.Total_Error_Calc();
-  Serial.print("Total:\t"); Serial.println(BLF536.totalError);
+  Serial.print("Right:\t"); Serial.println(rightSensor.error); Serial.print("\t");
 }
 
 

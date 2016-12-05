@@ -206,9 +206,14 @@ void Sensor::Get_Line_Value(void) {
 
     tmp = this->sensorVals_T0[i];
 
+    /* --- ORIGINAL WORKING ---
     // Numerator of Equation
     total += tmp * (j * MULTIPLIER);  
     j++;
+    */
+
+    // TESTING
+    total += tmp * i;
 
     // Denominator of Equation
     sum += tmp;                        
@@ -239,7 +244,14 @@ void Sensor::Sensor_Calc(void) {
   // Get the sensed value from the center of the sensor in CENTIMETERS
   // Equation: Sensed Value = ( Current Line Value - Initialized Line Value ) / 1000
   // Sensors are 1 cm apart - Conversion factor is 1000 local units = 1 cm in the real world
-  this->sensedVal = (double)(this->lineVal - this->initLineVal) / (double)1000;   
+  
+  /* --- ORIGINAL WORKING ---
+  this->sensedVal = (double)(this->lineVal - this->initLineVal) / (double)1000;  
+  */
+
+  // Testing
+  this->sensedVal = (this->lineVal - this->initLineVal);
+   
 }
 
 
@@ -254,5 +266,31 @@ void Sensor::Hold_Value(void){
   for (int i = 0 ; i < NUM_SENSORS ; i++) {
     this->sensorVals_T0[i] = this->sensorVals_T1[i];
   }
+}
+
+
+/**************************************************************
+ * 
+ * Function: Check_Sensed_Val
+ * Author: Alper Ender
+ * Description: Checks the current sensed value from the old sensed value for large deviations
+ * 
+ **************************************************************/
+void Sensor::Check_Sensed_Val(void){
+  if(        this->sensorVals_T0[0] < OFF_LINE_THRESHOLD && this->sensorVals_T0[1] < OFF_LINE_THRESHOLD
+         &&  this->sensorVals_T0[2] < OFF_LINE_THRESHOLD && this->sensorVals_T0[3] < OFF_LINE_THRESHOLD
+         &&  this->sensorVals_T0[4] < OFF_LINE_THRESHOLD && this->sensorVals_T0[5] < OFF_LINE_THRESHOLD
+         &&  this->sensorVals_T0[6] < OFF_LINE_THRESHOLD && this->sensorVals_T0[7] < OFF_LINE_THRESHOLD){
+    // this->sensedVal = 0;
+    this->sensedVal = this->sensedValHold;
+  }
+  this->sensedValHold = this->sensedVal;
+  
+  /*
+  if(abs(this->sensedVal - this->sensedValHold) > DIFFERENCE_THRESHOLD){
+    this->sensedVal = this->sensedValHold;
+  }
+  this->sensedValHold = this->sensedVal;
+  */
 }
 

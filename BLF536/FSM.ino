@@ -14,25 +14,27 @@
  * 
  *************************************************************/
 void FSM(void) {
+  Determine_State();
+  
   switch (state) {
     
     case INIT: break;
     
     case READ_2_LINE:     {
-        Follow();
+        Follow_2_Line();
         break;
       }
       
     case READ_LEFT_LINE:  {
-        Follow();
+        Follow_Left();
         break;
       }
       
     case READ_RIGHT_LINE: {
-        Follow();
+        Follow_Right();
         break;
       }
-      
+
     case READ_NO_LINE:    {
         Open_Run();
         break;
@@ -51,53 +53,47 @@ void FSM(void) {
 
 /**************************************************************
  * 
- * Function: Read_Sate
+ * Function: Determine_State
  * Author: Alper Ender and Ben Wagner
  * Description: The function that determines the next state based on what the sensors are seeing.
  *
  * --- THIS FUNCTION IS CURRENTLY INCOMPLETE - 11/8 ---
  *
  **************************************************************/
-void Read_State(void) {
+void Determine_State(void) {
   boolean lostLeft, lostRight;
-  int errorCalcSel;
 
-  leftSensor.Read_All_Sensors();
-  rightSensor.Read_All_Sensors();
-
-  lostLeft = Check_Lost_Left_Line();
+  // Checking lost left or right lines
+  lostLeft  = Check_Lost_Left_Line();
   lostRight = Check_Lost_Right_Line();
 
-  if (lostLeft) leftSensor.Hold_Value();
-  if (lostRight) rightSensor.Hold_Value();
+  // Lost Both Lines
+  if(lostLeft && lostRight) {
+    state = READ_RIGHT_LINE;
+    // state = READ_NO_LINE;
+  }
 
-  if (Check_Intersection()) {
+  // Lost Left Line
+  if(lostLeft && !lostRight) {
+    state = READ_RIGHT_LINE;
+  }
+
+  // Lost Right Line
+  if(!lostLeft && lostRight) {
+    state = READ_RIGHT_LINE;
+    // state = READ_LEFT_LINE;
+  }
+
+  // Lost No Lines
+  if(!lostLeft && !lostRight) {
+    state = READ_RIGHT_LINE;
+    // state = READ_2_LINE;
+  }
+
+  // Checking for Intersection
+  if(Check_Intersection() > 7000) {
     state = INTERSECTION;
   }
-
-  if (lostLeft && lostRight) {
-    state = READ_NO_LINE;
-    errorCalcSel = 2;
-  }
-
-  if (lostLeft && !lostRight) {
-    state = READ_RIGHT_LINE;
-    errorCalcSel = 1;
-  }
-
-  if (!lostLeft && lostRight) {
-    state = READ_LEFT_LINE;
-    errorCalcSel = 0;
-  }
-
-  if (!lostLeft && !lostRight) {
-    state = READ_2_LINE;
-    errorCalcSel = 2;
-  }
-
-  leftSensor.Sensor_Calc();
-  rightSensor.Sensor_Calc();
-
 }
 
 
@@ -108,13 +104,15 @@ void Read_State(void) {
  * Description: Checks the RIGHT sensor to see if it sees a corner. If it does, then it changes the FSM to the intersection state to handle this intersection
  * 
  **************************************************************/
-int Check_Intersection(void) {
-  if (     rightSensor.sensorVals_T0[4] > ON_LINE_THRESHOLD && rightSensor.sensorVals_T0[5] > ON_LINE_THRESHOLD
-        && rightSensor.sensorVals_T0[6] > ON_LINE_THRESHOLD && rightSensor.sensorVals_T0[7] > ON_LINE_THRESHOLD) {
-    return 1;
-  }
+double Check_Intersection(void) {
+  double sum = 0;
 
-  return 0;
+  for(int i = 0 ; i < 7 ; i++){
+    sum += rightSensor.sensorVals_T0[i];
+  }
+  // Serial.println(sum);
+
+  return sum;
 }
 
 
@@ -125,34 +123,15 @@ int Check_Intersection(void) {
  * Description: Checks to see if the right sensor lost the line. Returns 1 if it did, else it returns 0
  * 
  **************************************************************/
-int Check_Lost_Right_Line(void) {
+boolean Check_Lost_Right_Line(void) {
   if (       rightSensor.sensorVals_T0[0] < OFF_LINE_THRESHOLD && rightSensor.sensorVals_T0[1] < OFF_LINE_THRESHOLD
          &&  rightSensor.sensorVals_T0[2] < OFF_LINE_THRESHOLD && rightSensor.sensorVals_T0[3] < OFF_LINE_THRESHOLD
          &&  rightSensor.sensorVals_T0[4] < OFF_LINE_THRESHOLD && rightSensor.sensorVals_T0[5] < OFF_LINE_THRESHOLD
          &&  rightSensor.sensorVals_T0[6] < OFF_LINE_THRESHOLD && rightSensor.sensorVals_T0[7] < OFF_LINE_THRESHOLD) {
-    return 1;
+    return true;
   }
 
-  return 0;
-}
-
-
-/**************************************************************
- * 
- * Function: Check_Lost_Right_Line
- * Author: Alper Ender
- * Description: Checks to see if the right sensor found the line. Returns 1 if it did, else it returns 0
- * 
- **************************************************************/
-int Check_Found_Right_Line(void) {
-  if (       rightSensor.sensorVals_T0[0] > ON_LINE_THRESHOLD || rightSensor.sensorVals_T0[1] > ON_LINE_THRESHOLD
-         ||  rightSensor.sensorVals_T0[2] > ON_LINE_THRESHOLD || rightSensor.sensorVals_T0[3] > ON_LINE_THRESHOLD
-         ||  rightSensor.sensorVals_T0[4] > ON_LINE_THRESHOLD || rightSensor.sensorVals_T0[5] > ON_LINE_THRESHOLD
-         ||  rightSensor.sensorVals_T0[6] > ON_LINE_THRESHOLD || rightSensor.sensorVals_T0[7] > ON_LINE_THRESHOLD) {
-    return 1;
-  }
-
-  return 0;
+  return false;
 }
 
 
@@ -163,34 +142,15 @@ int Check_Found_Right_Line(void) {
  * Description: Checks to see if the left sensor lost the line. Returns 1 if it did, else it returns 0
  * 
  **************************************************************/
-int Check_Lost_Left_Line(void) {
+boolean Check_Lost_Left_Line(void) {
   if (       leftSensor.sensorVals_T0[0] < OFF_LINE_THRESHOLD && leftSensor.sensorVals_T0[1] < OFF_LINE_THRESHOLD
          &&  leftSensor.sensorVals_T0[2] < OFF_LINE_THRESHOLD && leftSensor.sensorVals_T0[3] < OFF_LINE_THRESHOLD
          &&  leftSensor.sensorVals_T0[4] < OFF_LINE_THRESHOLD && leftSensor.sensorVals_T0[5] < OFF_LINE_THRESHOLD
          &&  leftSensor.sensorVals_T0[6] < OFF_LINE_THRESHOLD && leftSensor.sensorVals_T0[7] < OFF_LINE_THRESHOLD) {
-    return 1;
+    return true;
   }
 
-  return 0;
-}
-
-
-/**************************************************************
- * 
- * Function: Check_Lost_Right_Line
- * Author: Alper Ender
- * Description: Checks to see if the left sensor found the line. Returns 1 if it did, else it returns 0
- * 
- **************************************************************/
-int Check_Found_Left_Line(void) {
-  if (       leftSensor.sensorVals_T0[0] > ON_LINE_THRESHOLD || leftSensor.sensorVals_T0[1] > ON_LINE_THRESHOLD
-         ||  leftSensor.sensorVals_T0[2] > ON_LINE_THRESHOLD || leftSensor.sensorVals_T0[3] > ON_LINE_THRESHOLD
-         ||  leftSensor.sensorVals_T0[4] > ON_LINE_THRESHOLD || leftSensor.sensorVals_T0[5] > ON_LINE_THRESHOLD
-         ||  leftSensor.sensorVals_T0[6] > ON_LINE_THRESHOLD || leftSensor.sensorVals_T0[7] > ON_LINE_THRESHOLD) {
-    return 1;
-  }
-
-  return 0;
+  return false;
 }
 
 
@@ -202,11 +162,18 @@ int Check_Found_Left_Line(void) {
  * 
  **************************************************************/
 void Intersection(void) {
-  switch (random() % 3) {
-    case 0: RightTurnOL(); break;
-    case 1: GoStraightOL(); break;
-    case 2: LeftTurnOL(); break;
+  Serial.println("INTERSECTION STATE");
+  
+  Stop_Vehicle();
+  
+  switch (random(3)) {
+    case 0:   Go_Straight_OL(); break;
+    case 1:   Right_Turn_OL();  break;
+    case 2:   Left_Turn_OL();   break;
+    default:  Go_Straight_OL(); break;
   }
+  
+
 }
 
 
@@ -217,11 +184,11 @@ void Intersection(void) {
  * Description: OPEN LOOP - Going Straight through the intersection
  * 
  **************************************************************/
-void GoStraightOL(void) {
-  long timer = millis();
+void Go_Straight_OL(void) {
+  unsigned long timer = millis();
   while (millis() - timer < STRAIGHTTIME) {
-    BLF536.motorDiffPWM = 0;
-    BLF536.MotorDiff();
+    BLF536.MotorRightPtr->setSpeed(115);
+    BLF536.MotorLeftPtr->setSpeed(100);
   }
   return;
 }
@@ -234,11 +201,11 @@ void GoStraightOL(void) {
  * Description: OPEN LOOP - Turning right at the intersection
  * 
  **************************************************************/
-void RightTurnOL(void) {
-  long timer = millis();
+void Right_Turn_OL(void) {
+  unsigned long timer = millis();
   while (millis() - timer < RIGHTTURNTIME) {
-    BLF536.MotorRightPtr->setSpeed(5);
-    BLF536.MotorLeftPtr->setSpeed(255);
+    BLF536.MotorRightPtr->setSpeed(0);
+    BLF536.MotorLeftPtr->setSpeed(100);
   }
 }
 
@@ -250,21 +217,50 @@ void RightTurnOL(void) {
  * Description: OPEN LOOP - Turning left at the intersection
  * 
  **************************************************************/
-void LeftTurnOL() {
-  long timer = millis();
+void Left_Turn_OL() {
+  unsigned long timer = millis();
   while (millis() - timer < LEFTTURNTIME) {
-    BLF536.MotorRightPtr->setSpeed(255);
-    BLF536.MotorLeftPtr->setSpeed(100);
+    BLF536.MotorRightPtr->setSpeed(150);
+    BLF536.MotorLeftPtr->setSpeed(80);
   }
 }
 
 
-
-void Follow(void) {
+void Follow_2_Line(void) {
+  Serial.println("BOTH");
+  BLF536.pos = (leftSensor.sensedVal + rightSensor.sensedVal) / 2L;
 }
 
+
+void Follow_Right(void) {
+  Serial.println("RIGHT");
+  BLF536.pos = rightSensor.sensedVal;
+}
+
+
+void Follow_Left(void) {
+  Serial.println("LEFT");
+  BLF536.pos = leftSensor.sensedVal;
+}
 
 
 void Open_Run(void) {
-
+  Serial.println("NONE");
+  BLF536.pos = (leftSensor.sensedVal + rightSensor.sensedVal) / 2L;
 }
+
+void Stop_Vehicle(void){
+  BLF536.MotorRightPtr->setSpeed(0);
+  BLF536.MotorLeftPtr->setSpeed(0);
+  delay(1);
+  BLF536.MotorRightPtr->setSpeed(100);
+  BLF536.MotorLeftPtr->setSpeed(100);
+  BLF536.MotorRightPtr->run(BACKWARD);
+  BLF536.MotorLeftPtr->run(BACKWARD);
+  delay(100);
+  BLF536.MotorRightPtr->setSpeed(0);
+  BLF536.MotorLeftPtr->setSpeed(0);
+  BLF536.MotorRightPtr->run(FORWARD);
+  BLF536.MotorLeftPtr->run(FORWARD);
+}
+
