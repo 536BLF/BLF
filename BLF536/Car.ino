@@ -19,33 +19,9 @@ Car::Car(){
  *              
  **************************************************************/
 void Car::Obtain_Errors(void){
-  
-  /*
-
-   --- ORIGINAL POSITION CALCULATION OF SENSORS - AVERAGE OF BOTH SIDES ---
-  
-  // Calculating the position of the vehicle in respect to the set point
-  this->pos = (leftSensor.sensedVal + rightSensor.sensedVal) / 2;
-  
-  */
-  
-  // --- READING ONLY RIGHT SENSOR ---
-  // this->pos = rightSensor.sensedVal;
-
+ 
   // Calculating the total error for the vehicle
   this->totalError = this->pos - this->setPoint;
-
-  /*
-
-  --- DEADBAND CALCULATION - UNTESTED ---
-  
-  #define DEADBAND_VAL (0.1)
-
-  if(abs(this->totalErrorHold[0] - this->totalError) < DEADBAND_VAL){
-    this->totalError = this->totalErrorHold[0];
-  }
-  
-  */
 
 }
 

@@ -57,12 +57,17 @@ void Tester::Print_Line_Values(void){
  * 
  **************************************************************/
 void Tester::Print_Total_Error(void){
-  Serial.print("LeftINIT:\t"); Serial.print(leftSensor.initLineVal); Serial.print("\t");
-  Serial.print("RightINIT:\t"); Serial.print(rightSensor.initLineVal); Serial.print("\t");
-  leftSensor.Sensor_Calc();
+  Serial.print("LeftSV:\t"); Serial.print(leftSensor.sensedVal); Serial.print("\t");
+  Serial.print("LeftLV:\t"); Serial.print(leftSensor.lineVal); Serial.print("\t");
+
+  Serial.print("RightSV:\t"); Serial.print(rightSensor.sensedVal); Serial.print("\t");
+  Serial.print("RightLV:\t"); Serial.print(rightSensor.lineVal); Serial.print("\t");
+
+  /*leftSensor.Sensor_Calc();
   Serial.print("Left:\t"); Serial.print(leftSensor.error); Serial.print("\t");
   rightSensor.Sensor_Calc();
   Serial.print("Right:\t"); Serial.println(rightSensor.error); Serial.print("\t");
+  */
 }
 
 

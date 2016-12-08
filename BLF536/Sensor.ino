@@ -238,16 +238,12 @@ void Sensor::Get_Line_Value(void) {
  **************************************************************/
 void Sensor::Sensor_Calc(void) {
 
-  // Get the line value between 0 - 7000
+  // Get the line value between 0 - 7
   Get_Line_Value();  
 
   // Get the sensed value from the center of the sensor in CENTIMETERS
   // Equation: Sensed Value = ( Current Line Value - Initialized Line Value ) / 1000
   // Sensors are 1 cm apart - Conversion factor is 1000 local units = 1 cm in the real world
-  
-  /* --- ORIGINAL WORKING ---
-  this->sensedVal = (double)(this->lineVal - this->initLineVal) / (double)1000;  
-  */
 
   // Testing
   this->sensedVal = (this->lineVal - this->initLineVal);

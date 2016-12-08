@@ -8,7 +8,7 @@
 
 
 // Global Variables
-enum {INIT, READ_2_LINE, READ_LEFT_LINE, READ_RIGHT_LINE, READ_NO_LINE, INTERSECTION} state = INIT;
+enum {INIT, FOLLOW_LEFT_LINE, FOLLOW_RIGHT_LINE, INTERSECTION} state = INIT;
 volatile unsigned long counter = 1;
 volatile unsigned long counterHold = 0;
 
@@ -64,10 +64,7 @@ void loop(){
   if(counter!=counterHold){
     
     // --- FINITE STATE MACHINE --- //
-    // FSM();
-    
-    BLF536.pos = rightSensor.sensedVal;
-    // BLF536.pos = (leftSensor.sensedVal + rightSensor.sensedVal) / 2L;
+    FSM();
 
     if(state != INTERSECTION){
       // --- SENSOR --- //
@@ -84,15 +81,15 @@ void loop(){
   
       // --- TESTING: Uncomment any of these below if you want to see specific outputs to the serial port --- //
 
-      // noInterrupts();
-      Serial.println(BLF536.pos);
+      noInterrupts();
+      // Serial.println(BLF536.pos);
       // Serial.println(BLF536.totalError);
       // Serial.println(BLF536.motorDiffPWM);
   
-      // tester.Print_Total_Error();
+      tester.Print_Total_Error();
       // tester.Print_Line_Values();
       // tester.Print_Sensor_Values();
-      // interrupts();
+      interrupts();
   
       // --- DISPLAYING TIMERS --- //
       // tester.Display_Timer();  // Displays Timer

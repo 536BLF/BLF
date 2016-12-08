@@ -11,24 +11,14 @@ void FSM(void) {
   switch (state) {
     
     case INIT: break;
-    
-    case READ_2_LINE:     {
-        Follow_2_Line();
-        break;
-      }
       
-    case READ_LEFT_LINE:  {
+    case FOLLOW_LEFT_LINE:  {
         Follow_Left();
         break;
       }
       
-    case READ_RIGHT_LINE: {
+    case FOLLOW_RIGHT_LINE: {
         Follow_Right();
-        break;
-      }
-
-    case READ_NO_LINE:    {
-        Open_Run();
         break;
       }
       
@@ -59,31 +49,31 @@ void Determine_State(void) {
 
   // Lost Both Lines
   if(lostLeft && lostRight) {
-    state = READ_RIGHT_LINE;
-    // state = READ_NO_LINE;
+    if(state == FOLLOW_LEFT_LINE)   state = FOLLOW_LEFT_LINE;
+    else                            state = FOLLOW_RIGHT_LINE;
   }
 
   // Lost Left Line
   if(lostLeft && !lostRight) {
-    state = READ_RIGHT_LINE;
+    state = FOLLOW_RIGHT_LINE;
   }
 
   // Lost Right Line
   if(!lostLeft && lostRight) {
-    // state = READ_RIGHT_LINE;
-    state = READ_LEFT_LINE;
+    state = FOLLOW_LEFT_LINE;
   }
 
   // Lost No Lines
   if(!lostLeft && !lostRight) {
-    state = READ_RIGHT_LINE;
-    // state = READ_2_LINE;
+    if(state == FOLLOW_LEFT_LINE)   state = FOLLOW_LEFT_LINE;
+    else                            state = FOLLOW_RIGHT_LINE;
   }
 
   // Checking for Intersection
   if(Check_Intersection() > 7000) {
     state = INTERSECTION;
   }
+
 }
 
 
@@ -143,7 +133,8 @@ boolean Check_Lost_Left_Line(void) {
   return false;
 }
 
-
+  int BenSucks = 0;
+  
 /**************************************************************
  * 
  * Function: Intersection
@@ -156,13 +147,14 @@ void Intersection(void) {
   
   Stop_Vehicle();
   
-  switch (random(3)) {
+  switch (BenSucks) {
     case 0:   Go_Straight_OL(); break;
     case 1:   Right_Turn_OL();  break;
     case 2:   Left_Turn_OL();   break;
     default:  Go_Straight_OL(); break;
   }
-  
+
+  if(++BenSucks > 2) BenSucks = 0;
 
 }
 
@@ -176,9 +168,11 @@ void Intersection(void) {
  **************************************************************/
 void Go_Straight_OL(void) {
   unsigned long timer = millis();
+  BLF536.MotorRightPtr->setSpeed(115);
+  BLF536.MotorLeftPtr->setSpeed(100);
+  delay(300);
   while (millis() - timer < STRAIGHTTIME) {
-    BLF536.MotorRightPtr->setSpeed(115);
-    BLF536.MotorLeftPtr->setSpeed(100);
+    if(!Check_Lost_Right_Line()) break;
   }
   return;
 }
@@ -193,9 +187,11 @@ void Go_Straight_OL(void) {
  **************************************************************/
 void Right_Turn_OL(void) {
   unsigned long timer = millis();
+  BLF536.MotorRightPtr->setSpeed(0);
+  BLF536.MotorLeftPtr->setSpeed(100);
+  delay(500);
   while (millis() - timer < RIGHTTURNTIME) {
-    BLF536.MotorRightPtr->setSpeed(0);
-    BLF536.MotorLeftPtr->setSpeed(100);
+    if(!Check_Lost_Left_Line()) break;
   }
 }
 
@@ -209,10 +205,33 @@ void Right_Turn_OL(void) {
  **************************************************************/
 void Left_Turn_OL() {
   unsigned long timer = millis();
-  while (millis() - timer < LEFTTURNTIME) {
-    BLF536.MotorRightPtr->setSpeed(150);
-    BLF536.MotorLeftPtr->setSpeed(80);
+
+  // Go Straight
+  BLF536.MotorRightPtr->setSpeed(115);
+  BLF536.MotorLeftPtr->setSpeed(100);
+  delay(300);
+  while (millis() - timer < STRAIGHTTIME) {
+    if(!Check_Lost_Right_Line()) break;
   }
+
+  // Go Left
+  BLF536.MotorRightPtr->setSpeed(140);
+  BLF536.MotorLeftPtr->setSpeed(0);
+
+  timer = millis();
+  while (millis() - timer < STRAIGHTTIME) {
+    if(Check_Lost_Right_Line()) break;
+  }
+
+  delay(100);
+  timer = millis();
+  while (millis() - timer < STRAIGHTTIME) {
+    if(!Check_Lost_Right_Line()) break;
+  }
+
+  delay(200);
+
+  
 }
 
 
