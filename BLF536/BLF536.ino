@@ -85,7 +85,7 @@ void loop(){
       // --- TESTING: Uncomment any of these below if you want to see specific outputs to the serial port --- //
 
       // noInterrupts();
-      // Serial.println(BLF536.pos);
+      Serial.println(BLF536.pos);
       // Serial.println(BLF536.totalError);
       // Serial.println(BLF536.motorDiffPWM);
   

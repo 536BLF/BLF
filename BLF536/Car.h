@@ -13,8 +13,8 @@ class Car
     volatile unsigned long timer             = 0;            // Timer to ensure that the each loop runs T second intervals 
     volatile double        setPoint          = 0;            // Set point for system identification: 1 for system identification, 0 for regular control
     volatile double        pwmSetSpeed       = SETSPEED;     // Setting the PWM speed   
-    volatile double        pos;                              // The position of the vehicle in reference to the set point
-    volatile double        posHold            = 0;            // Deadband
+    volatile double        pos               = 0;            // The position of the vehicle in reference to the set point
+    volatile double        posHold           = 0;           
     volatile double        totalError;                       // The total error of the vehicle from its set point
     volatile double        totalErrorHold[HOLD_AMOUNT];      // Holding the total error amounts
     volatile double        motorDiffPWM;                     // The motor differential PWM

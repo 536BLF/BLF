@@ -1,16 +1,8 @@
-/*----------------------------------------------------------------------
- *
- *    THESE FUNCTIONS ARE NOT COMPLETED NOR ARE THEY TESTED  (11/25)   
- *
- * --------------------------------------------------------------------*/
-
 /**************************************************************
  * 
  * Function: FSM
  * Author: Ben Wagner and Alper Ender
  * Description: The finite state machine to determine the state of the vehicle
- * 
- * --- THIS FUNCTION IS CURRENTLY INCOMPLETE - 11/5 ---
  * 
  *************************************************************/
 void FSM(void) {
@@ -57,8 +49,6 @@ void FSM(void) {
  * Author: Alper Ender and Ben Wagner
  * Description: The function that determines the next state based on what the sensors are seeing.
  *
- * --- THIS FUNCTION IS CURRENTLY INCOMPLETE - 11/8 ---
- *
  **************************************************************/
 void Determine_State(void) {
   boolean lostLeft, lostRight;
@@ -80,8 +70,8 @@ void Determine_State(void) {
 
   // Lost Right Line
   if(!lostLeft && lostRight) {
-    state = READ_RIGHT_LINE;
-    // state = READ_LEFT_LINE;
+    // state = READ_RIGHT_LINE;
+    state = READ_LEFT_LINE;
   }
 
   // Lost No Lines
@@ -179,8 +169,8 @@ void Intersection(void) {
 
 /**************************************************************
  * 
- * Function: GoStraightOL
- * Author: Ben Wagner
+ * Function: Go_Straight_OL
+ * Author: Ben Wagner and Alper Ender
  * Description: OPEN LOOP - Going Straight through the intersection
  * 
  **************************************************************/
@@ -196,8 +186,8 @@ void Go_Straight_OL(void) {
 
 /**************************************************************
  * 
- * Function: GoStraightOL
- * Author: Ben Wagner
+ * Function: Right_Turn_OL
+ * Author: Ben Wagner and Alper Ender
  * Description: OPEN LOOP - Turning right at the intersection
  * 
  **************************************************************/
@@ -212,8 +202,8 @@ void Right_Turn_OL(void) {
 
 /**************************************************************
  * 
- * Function: GoStraightOL
- * Author: Ben Wagner
+ * Function: Left_Turn_OL
+ * Author: Ben Wagner and Alper Ender
  * Description: OPEN LOOP - Turning left at the intersection
  * 
  **************************************************************/

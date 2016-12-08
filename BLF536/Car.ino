@@ -203,6 +203,27 @@ void Car::Controller(){
   */
 
   /*
+  // PID  Controller - SS: 100
+  // System ID Results: Unstable - Very Oscillatory
+  // Curvy Track Results: Untested
+  
+  //    251 z^2 - 475.8 z + 225.5
+  //  ----------------------------
+  //    0.01643 z^2 - 0.02286 z + 0.006432
+
+  #define PID_VAL_A             (251L)
+  #define PID_VAL_B             (-475.8L)
+  #define PID_VAL_C             (225.5L)
+  #define PID_VAL_D             (0.01643L)
+  #define PID_VAL_E             (-0.02286L)
+  #define PID_VAL_F             (0.006432L)
+
+  this->motorDiffPWM = (PID_VAL_A * this->totalError + PID_VAL_B * this->totalErrorHold[0]   + PID_VAL_C * this->totalErrorHold[1] 
+                                                     - PID_VAL_E * this->motorDiffPWMHold[0] - PID_VAL_F * this->motorDiffPWMHold[1]) / PID_VAL_D;
+  this->motorDiffPWM = this->motorDiffPWM * 1L;
+  */
+
+  /*
   // PID  Controller - SS: 80
   // System ID Results: Stable at 160 SS
   // Curvy Track Results: Not good - not aggressive enough for the turns
@@ -406,7 +427,7 @@ void Car::Controller(){
   this->motorDiffPWM = A * this->totalError + B * this->totalErrorHold[0] - C * this->motorDiffPWMHold[0];  
   */
 
-  /*
+  
   // SISO Lead/Lag Controller - SS: 140
   // System ID Results: STABLE - Nice and slow. Even better with a gain of 5
   // Curvy Track Results: BEAUTIFUL - just a tad choppy 
@@ -419,7 +440,7 @@ void Car::Controller(){
 
   this->motorDiffPWM = A * this->totalError + B * this->totalErrorHold[0] - C * this->motorDiffPWMHold[0];  
   this->motorDiffPWM = this->motorDiffPWM * 5L;
-  */
+  
   
 
   /*
@@ -448,7 +469,7 @@ void Car::Controller(){
   #define C            (-0.009L)
 
   this->motorDiffPWM = A * this->totalError + B * this->totalErrorHold[0] - C * this->motorDiffPWMHold[0];  
-  this->motorDiffPWM = this->motorDiffPWM * 3L;
+  this->motorDiffPWM = this->motorDiffPWM * 2.5L;
   */
 
   
@@ -626,7 +647,7 @@ void Car::Controller(){
 
   /*
   // ------ CURRENT OBSERVER CONTROLLERS -------
-  // Prediction Observer Controller - SS: 160
+  // Current Observer Controller - SS: 160
   // System ID Results: M.Stable - oscillatory behavior
   // Curvy Track Results: UNTESTED
      
@@ -641,9 +662,10 @@ void Car::Controller(){
                                              - E * this->motorDiffPWMHold[0] - G * this->motorDiffPWMHold[1]) / D;
   this->motorDiffPWM = this->motorDiffPWM * 1.13L;
   */
+  
 
   /*
-  // Prediction Observer Controller - SS: 140
+  // Current Observer Controller - SS: 140
   // System ID Results: M.Stable - Oscillatory
   // Curvy Track Results: UNTESTED
      
@@ -659,7 +681,7 @@ void Car::Controller(){
   */
 
   /*
-  // Prediction Observer Controller - SS: 120
+  // Current Observer Controller - SS: 120
   // System ID Results: Unstable - opposite of the way it should go
   // Curvy Track Results: UNTESTED
      
@@ -677,7 +699,7 @@ void Car::Controller(){
 
 
   /*
-  // Prediction Observer Controller - SS: 100
+  // Current Observer Controller - SS: 100
   // System ID Results: Unstable
   // Curvy Track Results: UNTESTED
      
@@ -754,7 +776,7 @@ void Car::Controller(){
   this->motorDiffPWM = this->motorDiffPWM * 0.1L;
   */
 
-  
+  /*
   // IH-LQR Controller - SS: 100
   // System ID Results: Stable - Slow and steady with a gain of 0.1 . Could be good around corners.
   // Curvy Track Results: UNTESTED
@@ -771,8 +793,7 @@ void Car::Controller(){
 
   this->motorDiffPWM = A * this->totalError + B * this->totalErrorHold[0] + C * this->totalErrorHold[1] - D * this->motorDiffPWMHold[0] - E * this->motorDiffPWMHold[1];
   this->motorDiffPWM = this->motorDiffPWM * 0.1L;
-  
-
+  */
 
 
 

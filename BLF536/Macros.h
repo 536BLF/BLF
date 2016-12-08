@@ -35,7 +35,7 @@
                                          // If the difference is greater than this threshold, the old value is used.
 
 // --- MOTOR CONTROL --- ///
-#define SETSPEED              (100L)     // Arbitrary - found through experemental values
+#define SETSPEED              (140L)     // Arbitrary - found through experemental values
 #define KPROP                 (100L)     // Proportional controller constant
 #define MAX_SPEED_VAL         (255L)     // Max input into the motors
 
