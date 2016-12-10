@@ -72,7 +72,6 @@ void Car::MotorDiff(){
   Serial.print("\t");
   */
 
-  
   // Throwing the motor values into the motors
   MotorRightPtr->setSpeed(right);
   MotorLeftPtr->setSpeed(left);
@@ -416,7 +415,6 @@ void Car::Controller(){
 
   this->motorDiffPWM = A * this->totalError + B * this->totalErrorHold[0] - C * this->motorDiffPWMHold[0];  
   this->motorDiffPWM = this->motorDiffPWM * 5L;
-  
   
 
   /*
@@ -769,60 +767,6 @@ void Car::Controller(){
 
   this->motorDiffPWM = A * this->totalError + B * this->totalErrorHold[0] + C * this->totalErrorHold[1] - D * this->motorDiffPWMHold[0] - E * this->motorDiffPWMHold[1];
   this->motorDiffPWM = this->motorDiffPWM * 0.1L;
-  */
-
-
-
-
-  /*
-  // --- FINAL CONTROLLER --- //
-
-  double A, B, C, D, E, gain;
-
-  if(rightSensor.sensedVal < 1 || rightSensor.sensedVal > 6){
-        
-    // SISO Lead/Lag Controller - SS: 140
-    // System ID Results: STABLE - Nice and slow. Even better with a gain of 5
-    // Curvy Track Results: BEAUTIFUL - just a tad choppy 
-  
-    // (272.9z-259.2)/(z-0.07)
-
-    this->pwmSetSpeed = 140;
-    
-    A = 272.9L;
-    B = -259.2L;
-    C = -0.07L;
-
-    gain = 5L;
-    
-    this->motorDiffPWM = A * this->totalError + B * this->totalErrorHold[0] - C * this->motorDiffPWMHold[0];  
-    this->motorDiffPWM = this->motorDiffPWM * gain;
-  
-  } else {
-  
-    // ------ IH-LQR CONTROLLERS -------
-    // IH-LQR Controller - SS: 160
-    // System ID Results: Stable - Good with a gain of .1 or .2 . Might do well around corners
-    // Curvy Track Results: Moderate - alright track run, not aggressive enough around sharp corners
-  
-    //      2587 z^2 - 1930 z
-    //  -------------------------
-    //  z^2 - 0.4313 z + 0.003083
-
-    this->pwmSetSpeed = 160;
-    
-    A = 2587L;
-    B = -1930L;
-    C = 0L;
-    D = -.4313L;
-    E = 0.003083L;
-
-    gain = 0.2L;
-  
-    this->motorDiffPWM = A * this->totalError + B * this->totalErrorHold[0] + C * this->totalErrorHold[1] - D * this->motorDiffPWMHold[0] - E * this->motorDiffPWMHold[1];
-    this->motorDiffPWM = this->motorDiffPWM * gain;
-      
-  }
   */
   
 }

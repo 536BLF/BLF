@@ -39,10 +39,10 @@
 #define KPROP                 (100L)     // Proportional controller constant
 #define MAX_SPEED_VAL         (255L)     // Max input into the motors
 
+// --- TRACK TYPE --- //
+#define INTERSECTION_TRACK    (1)
 
-// --- EVERYTHING BELOW THIS IS UNFINISHED --- //
-
-
+// --- TURNS ---//
 #define STRAIGHTTIME          (2000)
 #define RIGHTTURNTIME         (3000)
-#define LEFTTURNTIME          (1800)
+#define LEFTTURNTIME          (2000)

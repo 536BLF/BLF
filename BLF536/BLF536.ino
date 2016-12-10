@@ -81,15 +81,15 @@ void loop(){
   
       // --- TESTING: Uncomment any of these below if you want to see specific outputs to the serial port --- //
 
-      noInterrupts();
+      // noInterrupts();
       // Serial.println(BLF536.pos);
       // Serial.println(BLF536.totalError);
       // Serial.println(BLF536.motorDiffPWM);
   
-      tester.Print_Total_Error();
+      // tester.Print_Total_Error();
       // tester.Print_Line_Values();
       // tester.Print_Sensor_Values();
-      interrupts();
+      // interrupts();
   
       // --- DISPLAYING TIMERS --- //
       // tester.Display_Timer();  // Displays Timer

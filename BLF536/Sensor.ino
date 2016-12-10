@@ -187,9 +187,9 @@ int Sensor::Read_Average(void) {
  * Author: Alper Ender
  * Description: Obtaining the value between 0 - 7000 where the center of the line is located on the array according to the sensors
  * 
- * Equation Used:     (Sensor0 * 0) + (Sensor1 * 1000) + (Sensor2 * 2000) + (Sensor3 * 3000) ...
- *                    --------------------------------------------------------------------------
- *                    (   Sensor0   +       Sensor1     +     Sensor2     +     Sensor3 ...
+ * Equation Used:     (Sensor0 * 0) + (Sensor1 * 1) + (Sensor2 * 2) + (Sensor3 * 3) ...
+ *                    ----------------------------------------------------------------------
+ *                    (   Sensor0   +   Sensor1   +   Sensor2   +   Sensor3 ...
  *                    
  * The exact center value of the line is obtained through calibration
  * 
@@ -206,13 +206,7 @@ void Sensor::Get_Line_Value(void) {
 
     tmp = this->sensorVals_T0[i];
 
-    /* --- ORIGINAL WORKING ---
-    // Numerator of Equation
-    total += tmp * (j * MULTIPLIER);  
-    j++;
-    */
-
-    // TESTING
+    // Numerator of equation
     total += tmp * i;
 
     // Denominator of Equation
@@ -233,7 +227,7 @@ void Sensor::Get_Line_Value(void) {
  * 
  * Function: Sensor_Error_Calc
  * Author: Alper Ender
- * Description: Obtain the error calculation for the array on the line
+ * Description: Obtain the sensed value for the array on the line
  * 
  **************************************************************/
 void Sensor::Sensor_Calc(void) {
@@ -242,10 +236,7 @@ void Sensor::Sensor_Calc(void) {
   Get_Line_Value();  
 
   // Get the sensed value from the center of the sensor in CENTIMETERS
-  // Equation: Sensed Value = ( Current Line Value - Initialized Line Value ) / 1000
-  // Sensors are 1 cm apart - Conversion factor is 1000 local units = 1 cm in the real world
-
-  // Testing
+  // Equation: Sensed Value = ( Current Line Value - Initialized Line Value )
   this->sensedVal = (this->lineVal - this->initLineVal);
    
 }
@@ -277,16 +268,8 @@ void Sensor::Check_Sensed_Val(void){
          &&  this->sensorVals_T0[2] < OFF_LINE_THRESHOLD && this->sensorVals_T0[3] < OFF_LINE_THRESHOLD
          &&  this->sensorVals_T0[4] < OFF_LINE_THRESHOLD && this->sensorVals_T0[5] < OFF_LINE_THRESHOLD
          &&  this->sensorVals_T0[6] < OFF_LINE_THRESHOLD && this->sensorVals_T0[7] < OFF_LINE_THRESHOLD){
-    // this->sensedVal = 0;
     this->sensedVal = this->sensedValHold;
   }
   this->sensedValHold = this->sensedVal;
-  
-  /*
-  if(abs(this->sensedVal - this->sensedValHold) > DIFFERENCE_THRESHOLD){
-    this->sensedVal = this->sensedValHold;
-  }
-  this->sensedValHold = this->sensedVal;
-  */
 }
 

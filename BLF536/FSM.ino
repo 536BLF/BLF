@@ -69,10 +69,12 @@ void Determine_State(void) {
     else                            state = FOLLOW_RIGHT_LINE;
   }
 
-  // Checking for Intersection
+  #ifdef INTERSECTION_TRACK
+  // Intersection state only available during the intersection track
   if(Check_Intersection() > 7000) {
     state = INTERSECTION;
   }
+  #endif
 
 }
 
@@ -133,28 +135,29 @@ boolean Check_Lost_Left_Line(void) {
   return false;
 }
 
-  int BenSucks = 0;
+
+int intersection_choice = 0;
   
 /**************************************************************
  * 
  * Function: Intersection
- * Author: Ben Wagner
+ * Author: Ben Wagner, Eli Buckner, and Alper Ender
  * Description: What to do when the vehicle reaches an intersection
  * 
  **************************************************************/
 void Intersection(void) {
-  Serial.println("INTERSECTION STATE");
+  // Serial.println("INTERSECTION STATE");
   
   Stop_Vehicle();
   
-  switch (BenSucks) {
+  switch (intersection_choice) {
     case 0:   Go_Straight_OL(); break;
     case 1:   Right_Turn_OL();  break;
     case 2:   Left_Turn_OL();   break;
     default:  Go_Straight_OL(); break;
   }
 
-  if(++BenSucks > 2) BenSucks = 0;
+  if(++intersection_choice > 2) intersection_choice = 0;
 
 }
 
@@ -162,7 +165,7 @@ void Intersection(void) {
 /**************************************************************
  * 
  * Function: Go_Straight_OL
- * Author: Ben Wagner and Alper Ender
+ * Author: Ben Wagner, Eli Buckner, and Alper Ender
  * Description: OPEN LOOP - Going Straight through the intersection
  * 
  **************************************************************/
@@ -171,17 +174,17 @@ void Go_Straight_OL(void) {
   BLF536.MotorRightPtr->setSpeed(115);
   BLF536.MotorLeftPtr->setSpeed(100);
   delay(300);
+  
   while (millis() - timer < STRAIGHTTIME) {
     if(!Check_Lost_Right_Line()) break;
   }
-  return;
 }
 
 
 /**************************************************************
  * 
  * Function: Right_Turn_OL
- * Author: Ben Wagner and Alper Ender
+ * Author: Ben Wagner, Eli Buckner, and Alper Ender
  * Description: OPEN LOOP - Turning right at the intersection
  * 
  **************************************************************/
@@ -190,6 +193,7 @@ void Right_Turn_OL(void) {
   BLF536.MotorRightPtr->setSpeed(0);
   BLF536.MotorLeftPtr->setSpeed(100);
   delay(500);
+  
   while (millis() - timer < RIGHTTURNTIME) {
     if(!Check_Lost_Left_Line()) break;
   }
@@ -199,7 +203,7 @@ void Right_Turn_OL(void) {
 /**************************************************************
  * 
  * Function: Left_Turn_OL
- * Author: Ben Wagner and Alper Ender
+ * Author: Ben Wagner, Eli Buckner, and Alper Ender
  * Description: OPEN LOOP - Turning left at the intersection
  * 
  **************************************************************/
@@ -210,7 +214,7 @@ void Left_Turn_OL() {
   BLF536.MotorRightPtr->setSpeed(115);
   BLF536.MotorLeftPtr->setSpeed(100);
   delay(300);
-  while (millis() - timer < STRAIGHTTIME) {
+  while (millis() - timer < LEFTTURNTIME) {
     if(!Check_Lost_Right_Line()) break;
   }
 
@@ -219,45 +223,69 @@ void Left_Turn_OL() {
   BLF536.MotorLeftPtr->setSpeed(0);
 
   timer = millis();
-  while (millis() - timer < STRAIGHTTIME) {
+  while (millis() - timer < LEFTTURNTIME) {
     if(Check_Lost_Right_Line()) break;
   }
 
   delay(100);
   timer = millis();
-  while (millis() - timer < STRAIGHTTIME) {
+  while (millis() - timer < LEFTTURNTIME) {
     if(!Check_Lost_Right_Line()) break;
   }
 
   delay(200);
-
-  
 }
 
 
+/**************************************************************
+ * 
+ * Function: Follow_2_Line
+ * Author: Alper Ender
+ * Description: Follows both lines by averaging the error between them
+ * 
+ **************************************************************/
 void Follow_2_Line(void) {
-  Serial.println("BOTH");
+  // Serial.println("BOTH");
+  
   BLF536.pos = (leftSensor.sensedVal + rightSensor.sensedVal) / 2L;
 }
 
 
+/**************************************************************
+ * 
+ * Function: Follow_Right
+ * Author: Alper Ender
+ * Description: Follows the right line
+ * 
+ **************************************************************/
 void Follow_Right(void) {
-  Serial.println("RIGHT");
+  // Serial.println("RIGHT");
+  
   BLF536.pos = rightSensor.sensedVal;
 }
 
 
+/**************************************************************
+ * 
+ * Function: Follow_Right
+ * Author: Alper Ender
+ * Description: Follows the left line
+ * 
+ **************************************************************/
 void Follow_Left(void) {
-  Serial.println("LEFT");
+  // Serial.println("LEFT");
+  
   BLF536.pos = leftSensor.sensedVal;
 }
 
 
-void Open_Run(void) {
-  Serial.println("NONE");
-  BLF536.pos = (leftSensor.sensedVal + rightSensor.sensedVal) / 2L;
-}
-
+/**************************************************************
+ * 
+ * Function: Stop_Vehicle
+ * Author: Alper Ender
+ * Description: Stops the vehicle at an intersection
+ * 
+ **************************************************************/
 void Stop_Vehicle(void){
   BLF536.MotorRightPtr->setSpeed(0);
   BLF536.MotorLeftPtr->setSpeed(0);
